@@ -8,8 +8,7 @@
         "dev": "nodemon src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "db:create": "node src/database/db.create.js",
-        "db:drop": "node src/database/db.drop.js",
-        "db:init": "npm run db:create && node src/database/db.init.js"
+        "db:drop": "node src/database/db.drop.js"
     },
     "repository": {
         "type": "git",
