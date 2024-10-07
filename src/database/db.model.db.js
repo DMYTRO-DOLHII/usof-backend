@@ -1,7 +1,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
-const sequelize = require('./db.config');
+const sequelize = require('../config/db.config');
+const { validate } = require('uuid');
+const logger = require('../utils/logger');
 
-// User entity
 const User = sequelize.define('User', {
     login: {
         type: DataTypes.STRING,
@@ -30,6 +31,14 @@ const User = sequelize.define('User', {
             isEmail: true,
         },
     },
+    emailConfirmed: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        validate: {
+            notEmpty: false,
+        },
+        defaultValue: false
+    },
     profilePicture: {
         type: DataTypes.STRING,
         allowNull: true,
@@ -46,7 +55,6 @@ const User = sequelize.define('User', {
     timestamps: false,
 });
 
-// Post entity
 const Post = sequelize.define('Post', {
     title: {
         type: DataTypes.STRING,
@@ -68,7 +76,6 @@ const Post = sequelize.define('Post', {
     timestamps: false,
 });
 
-// Category entity
 const Category = sequelize.define('Category', {
     title: {
         type: DataTypes.STRING,
@@ -82,7 +89,6 @@ const Category = sequelize.define('Category', {
     timestamps: false,
 });
 
-// Comment entity
 const Comment = sequelize.define('Comment', {
     publishDate: {
         type: DataTypes.DATE,
@@ -96,7 +102,6 @@ const Comment = sequelize.define('Comment', {
     timestamps: false,
 });
 
-// Like entity
 const Like = sequelize.define('Like', {
     publishDate: {
         type: DataTypes.DATE,
@@ -110,7 +115,21 @@ const Like = sequelize.define('Like', {
     timestamps: false,
 });
 
-// Export all entities
+(async () => {
+    try {
+        await sequelize
+            .sync({ force: false })
+            .then(() => {
+                logger.info("Tables created successfully");
+            })
+            .catch((error) => {
+                logger.error(error.message);
+            });
+    } catch (error) {
+        logger.error(error.message);
+    }
+})();
+
 module.exports = {
     User,
     Post,
