@@ -33,10 +33,6 @@ const User = sequelize.define('User', {
     },
     emailConfirmed: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
-        validate: {
-            notEmpty: false,
-        },
         defaultValue: false
     },
     profilePicture: {

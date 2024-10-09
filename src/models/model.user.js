@@ -1,12 +1,12 @@
 const bcrypt = require('bcrypt');
-const { User } = require('../database/db.model.db'); // Import the User model from db.model.js
-const logger = require('../utils/logger'); // Import the logger
+const { User } = require('../database/db.model.db');
+const logger = require('../utils/logger');
+const { Op } = require("sequelize");
+const generateToken = require('../utils/token');
 
 class UserModel {
-    // Register a new user
     static async register({ login, password, fullName, email, profilePicture }) {
         try {
-            // Check if the user already exists
             const existingLogin = await User.findOne({ where: { login } });
             if (existingLogin) {
                 logger.error(`User with login "${login}" already exists`);
@@ -19,10 +19,8 @@ class UserModel {
                 throw new Error(`Email already registered`);
             }
 
-            // Hash the password before storing it
             const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Create and save the new user
             const newUser = await User.create({
                 login,
                 password: hashedPassword,
@@ -36,35 +34,52 @@ class UserModel {
             return newUser;
         } catch (error) {
             logger.error(`Registration error: ${error.message}`);
-            throw error; // Re-throw the caught error
+            throw error;
         }
     }
 
-    // Login a user
-    static async login({ login, password }) {
+    static async login({ login, email, password }) {
         try {
-            const user = await User.findOne({ where: { login, email } });
+            const user = await User.findOne({
+                where: {
+                    [Op.or]: [
+                        { login: login },
+                        { email: email }
+                    ]
+                }
+            });
 
             if (!user) {
-                return res.status(400).json({ message: 'Invalid login or email' });
+                logger.info('Invalid login or email');
+                return { status: 400, message: 'Invalid login or email' };
             }
 
-            if (!user.isEmailConfirmed) {
-                return res.status(403).json({ message: 'Please confirm your email to log in' });
+            if (!user.emailConfirmed) {
+                logger.info('Please confirm your email to log in');
+                return { status: 403, message: 'Please confirm your email to log in' };
             }
 
             const isPasswordValid = await bcrypt.compare(password, user.password);
 
             if (!isPasswordValid) {
-                return res.status(400).json({ message: 'Invalid password' });
+                logger.info('Invalid password');
+                return { status: 400, message: 'Invalid password' };
             }
 
-            // Return the logged-in user
-            return user;
+            const token = generateToken(user);
+
+            return { status: 200, message: 'Login successful', token }
         } catch (error) {
             logger.error(`Login error: ${error.message}`);
-            throw error; // Re-throw the caught error
         }
+    }
+
+    static async getAllUsers() {
+        return await User.findAll();
+    }
+
+    static async findById(user_id) {
+        return await User.findOne({ where: { id: user_id } });
     }
 
     static async findByLogin(login) {
@@ -77,7 +92,7 @@ class UserModel {
             return user;
         } catch (error) {
             logger.error(`Find user error: ${error.message}`);
-            throw error; // Re-throw the caught error
+            throw error;
         }
     }
 
@@ -89,18 +104,17 @@ class UserModel {
 
             if (!user) {
                 logger.warn(`No user found with email: ${email}`);
-                return null; // Return null if no user is found
+                return null;
             }
 
             logger.info(`User found with email: ${email}`);
             return user;
         } catch (error) {
             logger.error(`Error finding user by email: ${email} - ${error.message}`);
-            throw error; // Throw error, avoid creating a new error object
+            throw error;
         }
     }
 
-    // Update user details
     static async updateUser(login, updatedData) {
         try {
             const user = await User.findOne({ where: { login } });
@@ -113,11 +127,10 @@ class UserModel {
             return user;
         } catch (error) {
             logger.error(`Update user error for "${login}": ${error.message}`);
-            throw error; // Re-throw the caught error
+            throw error;
         }
     }
 
-    // Reset password
     static async resetPassword(login, newPassword) {
         try {
             const user = await User.findOne({ where: { login } });
@@ -126,14 +139,13 @@ class UserModel {
                 throw new Error('User not found');
             }
 
-            // Hash the new password
             const hashedPassword = await bcrypt.hash(newPassword, 10);
             await user.update({ password: hashedPassword });
 
             return user;
         } catch (error) {
             logger.error(`Password reset error for "${login}": ${error.message}`);
-            throw error; // Re-throw the caught error
+            throw error;
         }
     }
 }

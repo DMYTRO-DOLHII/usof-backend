@@ -1,13 +1,13 @@
 const bcrypt = require('bcrypt');
-const UserModel = require('../models/model.user'); // Assuming User is defined in db.model.js
+const UserModel = require('../models/model.user');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const generateToken = require('../utils/token');
-const nodemailer = require('nodemailer'); // For sending emails (password reset)
-const crypto = require('crypto'); // For generating reset tokens
+const { sendConfirmationEmail } = require('../utils/email');
+const crypto = require('crypto');
 const { doesNotMatch } = require('assert');
+const logger = require('../utils/logger');
 
-// User registration
 exports.registerUser = async (req, res) => {
     const { login, email, fullName, password, confirmPassword } = req.body;
 
@@ -20,15 +20,14 @@ exports.registerUser = async (req, res) => {
     }
 
     try {
-        UserModel.register({
+        const user = UserModel.register({
             login: login,
             email: email,
             fullName: fullName,
             password: password
         });
 
-        // Simulate sending an email confirmation link (this part can be expanded)
-        // Use nodemailer to send email for email confirmation
+        await sendConfirmationEmail(email, login);
 
         return res.status(201).json({ message: 'User registered successfully. Please confirm your email.' });
     } catch (error) {
@@ -36,7 +35,6 @@ exports.registerUser = async (req, res) => {
     }
 };
 
-// User login
 exports.loginUser = async (req, res) => {
     const { login, email, password } = req.body;
 
@@ -45,25 +43,18 @@ exports.loginUser = async (req, res) => {
     }
 
     try {
-        UserModel.login({ login: login, password: password });
-
-        const token = generateToken(user);
-
-        return res.status(200).json({ message: 'Login successful', token });
+        const response = await UserModel.login({ login: login, email: email, password: password });
+        res.status(response.status).json( { message: response.message, token: response.token});
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
 
-// User logout
 exports.logoutUser = async (req, res) => {
-    // Simulate token invalidation (JWT can't be invalidated on server side directly)
-    // Implement session-based authentication for true invalidation or token blacklist
 
     return res.status(200).json({ message: 'Logout successful' });
 };
 
-// Request password reset link
 exports.requestPasswordReset = async (req, res) => {
     const { email } = req.body;
 
@@ -81,14 +72,11 @@ exports.requestPasswordReset = async (req, res) => {
         const resetToken = crypto.randomBytes(32).toString('hex');
         const resetTokenHash = await bcrypt.hash(resetToken, 10);
 
-        // Store the hashed token in the user record
         user.resetToken = resetTokenHash;
         await user.save();
 
-        // Send reset link via email (use nodemailer)
         const resetLink = `${process.env.FRONTEND_URL}/password-reset/${resetToken}`;
 
-        // Implement nodemailer email sending logic here...
 
         return res.status(200).json({ message: 'Password reset link sent to email' });
     } catch (error) {
@@ -96,7 +84,6 @@ exports.requestPasswordReset = async (req, res) => {
     }
 };
 
-// Confirm password reset using token
 exports.confirmPasswordReset = async (req, res) => {
     const { confirmToken } = req.params;
     const { newPassword } = req.body;
@@ -115,11 +102,41 @@ exports.confirmPasswordReset = async (req, res) => {
         }
 
         user.password = await bcrypt.hash(newPassword, 10);;
-        user.resetToken = null; // TODO: sdelat krasivee
+        user.resetToken = null;
         await user.save();
 
         return res.status(200).json({ message: 'Password reset successfully' });
     } catch (error) {
+        return res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+};
+
+exports.confirmEmail = async (req, res) => {
+    const { token } = req.params;
+
+    if (!token) {
+        return res.status(400).json({ message: 'Token is required' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+
+        const user = await UserModel.findByEmail(decoded.email);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.emailConfirmed) {
+            return res.status(400).json({ message: 'Email already confirmed' });
+        }
+
+        user.emailConfirmed = true;
+        await user.save();
+
+        return res.status(200).json({ message: 'Email confirmed successfully' });
+    } catch (error) {
+        logger.error('Error during email confirmation:', error);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
