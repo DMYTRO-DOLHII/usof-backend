@@ -8,8 +8,7 @@
         "dev": "nodemon src/index.js",
         "test": "echo \"Error: no test specified\" && exit 1",
         "db:create": "node src/database/db.create.js",
-        "db:drop": "node src/database/db.drop.js",
-        "db:init": "npm run db:create && node src/database/db.init.js"
+        "db:drop": "node src/database/db.drop.js"
     },
     "repository": {
         "type": "git",
@@ -22,18 +21,21 @@
     },
     "homepage": "https://github.com/DMYTRO-DOLHII/usof-backend#readme",
     "dependencies": {
+        "adminjs": "^7.8.13",
+        "bcrypt": "^5.1.1",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
         "dotenv": "^16.4.5",
         "express": "^4.18.2",
         "jsonwebtoken": "^9.0.0",
-        "mongoose": "^6.11.1",
         "multer": "^1.4.5-lts.1",
+        "nodemailer": "^6.9.15",
         "pg": "^8.13.0",
         "pg-hstore": "^2.3.4",
         "sequelize": "^6.37.3",
         "socket.io": "^4.5.0",
         "uuid": "^9.0.0",
+        "validator": "^13.12.0",
         "winston": "^3.14.2"
     },
     "devDependencies": {
