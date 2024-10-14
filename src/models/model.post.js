@@ -29,11 +29,7 @@ class PostModel {
 
     static async findById(postId) {
         try {
-            const post = await Post.findOne({ where: { id: postId } });
-            if (!post) {
-                throw new Error('Post not found');
-            }
-            return post;
+            return await Post.findOne({ where: { id: postId } });
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
             throw error;
