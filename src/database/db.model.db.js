@@ -126,6 +126,17 @@ const Like = sequelize.define('Like', {
     }
 })();
 
+// Relationships
+Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' });
+Comment.belongsTo(Post, { foreignKey: 'postId' });
+
+Post.hasMany(Like, { foreignKey: 'postId', as: 'likes' });
+Like.belongsTo(Post, { foreignKey: 'postId' });
+
+Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' });
+Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' });
+
+
 module.exports = {
     User,
     Post,
