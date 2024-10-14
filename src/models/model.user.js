@@ -115,6 +115,10 @@ class UserModel {
         }
     }
 
+    static async updateUser(user_id, updateData) {
+        return await User.update(updateData, { where: { id: user_id } });
+    }
+
     static async updateUser(login, updatedData) {
         try {
             const user = await User.findOne({ where: { login } });
@@ -129,6 +133,10 @@ class UserModel {
             logger.error(`Update user error for "${login}": ${error.message}`);
             throw error;
         }
+    }
+
+    static async deleteUser(user_id) {
+        return await User.destroy({ where: { id: user_id } });
     }
 
     static async resetPassword(login, newPassword) {

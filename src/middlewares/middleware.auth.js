@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
+const Post = require('../models/model.post');
 const { SECRET_KEY } = process.env;
 
 const validateToken = (req, res, next) => {
@@ -30,4 +31,19 @@ const isAdmin = async (req, res, next) => {
     next();
 };
 
-module.exports = { validateToken, isAdmin };
+// Middleware to ensure the user is the post creator
+const authorizePostCreator =  (req, res, next) => {
+    const { post_id } = req.params;
+    try {
+        const post = Post.findByPk(post_id);
+        if (post.userId !== req.user.id) {
+            return res.status(403).json({ message: 'You are not authorized to modify this post' });
+        }
+        next();
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+};
+
+
+module.exports = { validateToken, isAdmin, authorizePostCreator };
