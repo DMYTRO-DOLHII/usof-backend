@@ -12,11 +12,20 @@ class CategoryModel {
         }
     }
 
-    static async getAll() {
+    static async findAll() {
         try {
             return await Category.findAll();
         } catch (error) {
             logger.error(`Fetching categories error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findByPk(categoryId) {
+        try {
+            return await Category.findByPk(categoryId);
+        } catch (error) {
+            logger.error(`Find category by ID error: ${error.message}`);
             throw error;
         }
     }

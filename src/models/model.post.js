@@ -17,7 +17,7 @@ class PostModel {
         }
     }
 
-    static async getAll({ limit, offset }) {
+    static async findAll({ limit, offset }) {
         try {
             const posts = await Post.findAll({ limit, offset });
             return posts;
@@ -36,6 +36,23 @@ class PostModel {
             return post;
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findByCategoryId(categoryId, { limit, offset }) {
+        try {
+            const posts = await Post.findAndCountAll({
+                where: { category: categoryId },
+                limit,
+                offset
+            });
+            return {
+                totalPosts: posts.count,
+                posts: posts.rows
+            };
+        } catch (error) {
+            logger.error(`Fetching posts by category error: ${error.message}`);
             throw error;
         }
     }
