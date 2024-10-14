@@ -21,9 +21,20 @@ class LikeModel {
         }
     }
 
-    static async deleteLike(userId, postId) {
+    static async findByCommentId(commentId) {
         try {
-            return await Like.destroy({ where: { userId, postId } });
+            // Fetch likes associated with the given commentId
+            const likes = await Like.findAll({ where: { commentId } });
+            return likes;
+        } catch (error) {
+            logger.error(`Fetching likes for comment ID ${commentId} error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async deleteLike(comment_id, user_id) {
+        try {
+            return await Like.destroy({ where: { comment_id, user_id } });
         } catch (error) {
             logger.error(`Like deletion error: ${error.message}`);
             throw error;
