@@ -26,27 +26,20 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.createUser = async (req, res) => {
-    const { login, password, confirmPassword, email, role } = req.body;
+    const { login, password, email, fullName, role } = req.body;
 
-    if (!login || !password || !confirmPassword || !email || !role) {
+    if (!login || !password || !fullName || !email || !role) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
-    if (password !== confirmPassword) {
-        return res.status(400).json({ message: 'Passwords do not match' });
-    }
-
     try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = {
-            login,
-            password: hashedPassword,
-            email,
-            role
-        };
+        if (await UserModel.findByLogin(login) || await UserModel.findByEmail(email)) {
+            return res.status(400).json({message: "Login or email already exists"});
+        }
 
-        const createdUser = await UserModel.createUser(newUser);
-        return res.status(201).json({ message: 'User created successfully', user: createdUser });
+        const newUser = UserModel.createUser({ login, password, email, fullName, role });
+
+        return res.status(201).json({ message: 'User created successfully', newUser });
     } catch (error) {
         return res.status(500).json({ message: 'Error creating user' });
     }

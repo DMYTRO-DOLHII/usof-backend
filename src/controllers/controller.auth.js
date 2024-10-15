@@ -7,6 +7,7 @@ const { sendConfirmationEmail } = require('../utils/email');
 const crypto = require('crypto');
 const { doesNotMatch } = require('assert');
 const logger = require('../utils/logger');
+const { User } = require('../database/db.model.db');
 
 exports.registerUser = async (req, res) => {
     const { login, email, fullName, password, confirmPassword } = req.body;
@@ -20,11 +21,24 @@ exports.registerUser = async (req, res) => {
     }
 
     try {
-        const user = UserModel.register({
-            login: login,
-            email: email,
-            fullName: fullName,
-            password: password
+        const existingLogin = await UserModel.findByLogin(login);
+        if (existingLogin) {
+            return res.status(400).json(`User with login "${login}" already exists`);
+        }
+
+        const existingEmail = await UserModel.findByEmail(email);
+        if (existingEmail) {
+            return res.status(400).json(`Email already registered`);
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const newUser = await User.create({
+            login,
+            password: hashedPassword,
+            fullName,
+            email,
+            profilePicture,
         });
 
         await sendConfirmationEmail(email, login);
@@ -43,8 +57,28 @@ exports.loginUser = async (req, res) => {
     }
 
     try {
-        const response = await UserModel.login({ login: login, email: email, password: password });
-        res.status(response.status).json( { message: response.message, token: response.token});
+        const user = await UserModel.findUser(login, email);
+
+        if (!user) {
+            logger.info('Invalid login or email');
+            return { status: 400, message: 'Invalid login or email' };
+        }
+
+        if (!user.emailConfirmed) {
+            logger.info('Please confirm your email to log in');
+            return { status: 403, message: 'Please confirm your email to log in' };
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (!isPasswordValid) {
+            logger.info('Invalid password');
+            return { status: 400, message: 'Invalid password' };
+        }
+
+        const token = generateToken(user);
+
+        res.status(200).json({ message: 'Login successful', token: token });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }

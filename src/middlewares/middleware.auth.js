@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
+const UserModel = require('../models/model.user');
 const Post = require('../models/model.post');
 const { SECRET_KEY } = process.env;
 
@@ -10,6 +11,8 @@ const validateToken = (req, res, next) => {
         logger.warn('No token provided');
         return res.status(401).json({ error: 'Unauthorized. No token provided.' });
     }
+
+    console.log(token);
 
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) {

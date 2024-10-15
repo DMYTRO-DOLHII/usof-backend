@@ -1,79 +1,8 @@
 const bcrypt = require('bcrypt');
 const { User } = require('../database/db.model.db');
 const logger = require('../utils/logger');
-const { Op } = require("sequelize");
-const generateToken = require('../utils/token');
 
 class UserModel {
-    static async register({ login, password, fullName, email, profilePicture }) {
-        try {
-            const existingLogin = await User.findOne({ where: { login } });
-            if (existingLogin) {
-                logger.error(`User with login "${login}" already exists`);
-                throw new Error('User already exists');
-            }
-
-            const existingEmail = await User.findOne({ where: { email } });
-            if (existingEmail) {
-                logger.error(`Email already registered`);
-                throw new Error(`Email already registered`);
-            }
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            const newUser = await User.create({
-                login,
-                password: hashedPassword,
-                fullName,
-                email,
-                profilePicture,
-            });
-
-            await newUser.save();
-
-            return newUser;
-        } catch (error) {
-            logger.error(`Registration error: ${error.message}`);
-            throw error;
-        }
-    }
-
-    static async login({ login, email, password }) {
-        try {
-            const user = await User.findOne({
-                where: {
-                    [Op.or]: [
-                        { login: login },
-                        { email: email }
-                    ]
-                }
-            });
-
-            if (!user) {
-                logger.info('Invalid login or email');
-                return { status: 400, message: 'Invalid login or email' };
-            }
-
-            if (!user.emailConfirmed) {
-                logger.info('Please confirm your email to log in');
-                return { status: 403, message: 'Please confirm your email to log in' };
-            }
-
-            const isPasswordValid = await bcrypt.compare(password, user.password);
-
-            if (!isPasswordValid) {
-                logger.info('Invalid password');
-                return { status: 400, message: 'Invalid password' };
-            }
-
-            const token = generateToken(user);
-
-            return { status: 200, message: 'Login successful', token }
-        } catch (error) {
-            logger.error(`Login error: ${error.message}`);
-        }
-    }
-
     static async getAllUsers() {
         return await User.findAll();
     }
@@ -84,12 +13,7 @@ class UserModel {
 
     static async findByLogin(login) {
         try {
-            const user = await User.findOne({ where: { login } });
-            if (!user) {
-                logger.error(`User with login "${login}" not found`);
-                throw new Error('User not found');
-            }
-            return user;
+            return await User.findOne({ where: { login } });
         } catch (error) {
             logger.error(`Find user error: ${error.message}`);
             throw error;
@@ -98,19 +22,25 @@ class UserModel {
 
     static async findByEmail(email) {
         try {
-            const user = await User.findOne({
-                where: { email: email }
-            });
-
-            if (!user) {
-                logger.warn(`No user found with email: ${email}`);
-                return null;
-            }
-
-            logger.info(`User found with email: ${email}`);
-            return user;
+            return await User.findOne({ where: { email: email } });
         } catch (error) {
             logger.error(`Error finding user by email: ${email} - ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async createUser({ login, password, email, fullName, role }) {
+        try {
+            return await User.create({
+                login,
+                password: await bcrypt.hash(password, 10),
+                email,
+                fullName,
+                role: role,
+                emailConfirmed: true
+            });
+        } catch (error) {
+            logger.error(`Error creating user.`);
             throw error;
         }
     }
