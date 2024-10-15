@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { User } = require('../database/db.model.db');
+const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 
 class UserModel {
@@ -25,6 +26,17 @@ class UserModel {
             return await User.findOne({ where: { email: email } });
         } catch (error) {
             logger.error(`Error finding user by email: ${email} - ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findUser({ login, email }) {
+        try {
+            return await User.findOne({
+                where: { [Op.or]: [{ login }, { email }] }
+            });
+        } catch (error) {
+            logger.error(error);
             throw error;
         }
     }

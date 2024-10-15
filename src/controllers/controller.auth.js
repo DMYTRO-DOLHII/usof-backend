@@ -57,7 +57,7 @@ exports.loginUser = async (req, res) => {
     }
 
     try {
-        const user = await UserModel.findUser(login, email);
+        const user = await UserModel.findUser({ login, email });
 
         if (!user) {
             logger.info('Invalid login or email');
