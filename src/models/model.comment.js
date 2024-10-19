@@ -16,7 +16,7 @@ class CommentModel {
         }
     }
 
-    static async getAllByPost(postId) {
+    static async findAllByPost(postId) {
         try {
             return await Comment.findAll({ where: { postId } });
         } catch (error) {

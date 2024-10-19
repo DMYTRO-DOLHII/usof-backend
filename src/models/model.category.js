@@ -2,10 +2,9 @@ const { Category } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 class CategoryModel {
-    static async create(name) {
+    static async create(title) {
         try {
-            const newCategory = await Category.create({ name });
-            return newCategory;
+            return await Category.create({ title });
         } catch (error) {
             logger.error(`Category creation error: ${error.message}`);
             throw error;

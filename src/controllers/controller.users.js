@@ -69,7 +69,7 @@ exports.uploadUserAvatar = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
     const { user_id } = req.params;
-    const updateData = req.body;
+    const { login, email, fullName, password, role } = req.body;
 
     try {
         const user = await UserModel.findById(user_id);
@@ -77,7 +77,14 @@ exports.updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        await UserModel.updateUser(user_id, updateData);
+        if (login) user.login = login;
+        if (email) user.email = email;
+        if (fullName) user.fullName = fullName;
+        if (password) user.password = password;
+        if (role) user.role = role;
+
+        await user.save();
+
         return res.status(200).json({ message: 'User updated successfully' });
     } catch (error) {
         return res.status(500).json({ message: 'Error updating user' });

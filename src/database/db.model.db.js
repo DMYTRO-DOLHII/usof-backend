@@ -111,6 +111,18 @@ const Like = sequelize.define('Like', {
     timestamps: false,
 });
 
+// Relationships
+Post.belongsTo(User, { as: 'user', foreignKey: 'userId'});
+Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' });
+Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' });
+Post.hasMany(Like, { foreignKey: 'postId', as: 'likes' });
+
+Comment.belongsTo(Post, { foreignKey: 'postId' });
+
+Like.belongsTo(Post, { foreignKey: 'postId' });
+
+Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' });
+
 (async () => {
     try {
         await sequelize
@@ -125,17 +137,6 @@ const Like = sequelize.define('Like', {
         logger.error(error.message);
     }
 })();
-
-// Relationships
-Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' });
-Comment.belongsTo(Post, { foreignKey: 'postId' });
-
-Post.hasMany(Like, { foreignKey: 'postId', as: 'likes' });
-Like.belongsTo(Post, { foreignKey: 'postId' });
-
-Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' });
-Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' });
-
 
 module.exports = {
     User,

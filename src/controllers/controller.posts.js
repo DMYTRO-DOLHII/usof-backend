@@ -1,7 +1,7 @@
-const Post = require('../models/model.post');
-const Comment = require('../models/model.comment');
-const Like = require('../models/model.like');
-const Category = require('../models/model.category');
+const PostModel = require('../models/model.post');
+const CommentModel = require('../models/model.comment');
+const LikeModel = require('../models/model.like');
+const CategoryModel = require('../models/model.category');
 
 exports.getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -9,13 +9,8 @@ exports.getAllPosts = async (req, res) => {
     const offset = (page - 1) * limit;
 
     try {
-        const posts = await Post.findAndCountAll({ limit, offset });
-        return res.status(200).json({
-            totalPosts: posts.count,
-            currentPage: page,
-            totalPages: Math.ceil(posts.count / limit),
-            posts: posts.rows
-        });
+        const posts = await PostModel.findAll({ limit, offset });
+        return res.status(200).json({ posts });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
@@ -24,7 +19,7 @@ exports.getAllPosts = async (req, res) => {
 exports.getPostById = async (req, res) => {
     const { post_id } = req.params;
     try {
-        const post = await Post.findByPk(post_id);
+        const post = await PostModel.findById(post_id);
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
@@ -37,7 +32,7 @@ exports.getPostById = async (req, res) => {
 exports.getPostComments = async (req, res) => {
     const { post_id } = req.params;
     try {
-        const comments = await Comment.findAll({ where: { postId: post_id } });
+        const comments = await CommentModel.findAllByPost(post_id);
         return res.status(200).json(comments);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -67,10 +62,10 @@ exports.getPostLikes = async (req, res) => {
 exports.createPost = async (req, res) => {
     const { title, content, categories } = req.body;
     try {
-        const newPost = await Post.create({ title, content, userId: req.user.id });
+        const newPost = await PostModel.create({ title, content, userId: req.user.id });
 
         if (categories && categories.length > 0) {
-            const categoryPromises = categories.map(cat => Category.create({ postId: newPost.id, name: cat }));
+            const categoryPromises = categories.map(cat => CategoryModel.create(cat));
             await Promise.all(categoryPromises);
         }
 

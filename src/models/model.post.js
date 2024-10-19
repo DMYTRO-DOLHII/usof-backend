@@ -4,13 +4,12 @@ const logger = require('../utils/logger');
 class PostModel {
     static async create({ title, content, userId, category }) {
         try {
-            const newPost = await Post.create({
+            return await Post.create({
                 title,
                 content,
                 userId,
                 category
             });
-            return newPost;
         } catch (error) {
             logger.error(`Post creation error: ${error.message}`);
             throw error;
@@ -19,8 +18,7 @@ class PostModel {
 
     static async findAll({ limit, offset }) {
         try {
-            const posts = await Post.findAll({ limit, offset });
-            return posts;
+            return await Post.findAll({ limit, offset });
         } catch (error) {
             logger.error(`Fetching posts error: ${error.message}`);
             throw error;

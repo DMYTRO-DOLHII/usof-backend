@@ -57,10 +57,6 @@ class UserModel {
         }
     }
 
-    static async updateUser(user_id, updateData) {
-        return await User.update(updateData, { where: { id: user_id } });
-    }
-
     static async updateUser(login, updatedData) {
         try {
             const user = await User.findOne({ where: { login } });
