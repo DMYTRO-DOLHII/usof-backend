@@ -31,6 +31,8 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json(`Email already registered`);
         }
 
+        // TODO: UserModel
+
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = await User.create({
@@ -61,12 +63,12 @@ exports.loginUser = async (req, res) => {
 
         if (!user) {
             logger.info('Invalid login or email');
-            return { status: 400, message: 'Invalid login or email' };
-        }
+            return req.status(400).json({ message: 'Invalid login or email' });
+        }  
 
         if (!user.emailConfirmed) {
             logger.info('Please confirm your email to log in');
-            return { status: 403, message: 'Please confirm your email to log in' };
+            return req.status(403).json({ message: 'Please confirm your email to log in' });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
