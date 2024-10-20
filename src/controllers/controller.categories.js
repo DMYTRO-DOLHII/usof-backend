@@ -1,22 +1,30 @@
-const Category = require('../models/model.category');
+const CategoryModel = require('../models/model.category');
+const PostModel = require('../models/model.post');
 const Post = require('../models/model.post');
 
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await Category.findAll();
+        const categories = await CategoryModel.getAll();
+
+        if (!categories || categories.length === 0) {
+            return res.status(404).json({ message: 'No categories found' });
+        }
+
         return res.status(200).json(categories);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
 
+
 exports.getCategoryById = async (req, res) => {
     const { category_id } = req.params;
     try {
-        const category = await Category.findByPk(category_id);
+        const category = await CategoryModel.findById(category_id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
+        
         return res.status(200).json(category);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -30,7 +38,7 @@ exports.getCategoryPosts = async (req, res) => {
     const offset = (page - 1) * limit;
 
     try {
-        const { totalPosts, posts } = await Post.findByCategoryId(category_id, { limit, offset });
+        const { totalPosts, posts } = await CategoryModel.findPostsByCategoryId(category_id, { limit, offset });
         return res.status(200).json({
             totalPosts,
             currentPage: page,

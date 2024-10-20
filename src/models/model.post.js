@@ -1,4 +1,4 @@
-const { Post } = require('../database/db.model.db');
+const { Post, Category } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 class PostModel {
@@ -34,22 +34,24 @@ class PostModel {
         }
     }
 
-    static async findByCategoryId(categoryId, { limit, offset }) {
-        try {
-            const posts = await Post.findAndCountAll({
-                where: { category: categoryId },
-                limit,
-                offset
-            });
-            return {
-                totalPosts: posts.count,
-                posts: posts.rows
-            };
-        } catch (error) {
-            logger.error(`Fetching posts by category error: ${error.message}`);
-            throw error;
-        }
-    }
+    // static async findByCategoryId(categoryId, { limit, offset }) {
+    //     try {
+    //         const posts = await Post.findAndCountAll({
+    //             where: { categoryId: categoryId },
+    //             include: [{ model: Category, as: 'categories' }], // Include the Post model to get post data
+    //             limit: limit,
+    //             offset: offset
+    //         });
+
+    //         return {
+    //             totalPosts: posts.count,
+    //             posts: posts.rows
+    //         };
+    //     } catch (error) {
+    //         logger.error(`Fetching posts by category error: ${error.message}`);
+    //         throw error;
+    //     }
+    // }
 
     static async findWithCategories(postId) {
         try {

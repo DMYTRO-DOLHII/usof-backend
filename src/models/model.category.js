@@ -12,16 +12,22 @@ class CategoryModel {
         }
     }
 
-    static async findAll() {
+    static async getAll() {
         try {
-            return await Category.findAll();
+            const categories = await Category.findAll();
+
+            if (!categories || categories.length === 0) {
+                logger.warn("No categories found");
+            }
+
+            return categories;
         } catch (error) {
             logger.error(`Fetching categories error: ${error.message}`);
             throw error;
         }
     }
 
-    static async findAll(titles) {
+    static async getAll(titles) {
         try {
             return await Category.findAll({
                 where: {
@@ -56,7 +62,33 @@ class CategoryModel {
         }
     }
 
-    static async findByPk(categoryId) {
+    static async findPostsByCategoryId(categoryId, { limit, offset }) {
+        try {
+            const categoryWithPosts = await Category.findByPk(categoryId, {
+                include: {
+                    model: Post,
+                    as: 'posts', // This should match the alias used in your association
+                },
+                limit: limit,
+                offset: offset
+            });
+    
+            if (!categoryWithPosts) {
+                throw new Error('Category not found');
+            }
+    
+            return {
+                totalPosts: categoryWithPosts.posts.length,
+                posts: categoryWithPosts.posts
+            };
+        } catch (error) {
+            logger.error(`Fetching posts by category error: ${error.message}`);
+            throw error;
+        }
+    }
+    
+
+    static async findById(categoryId) {
         try {
             return await Category.findByPk(categoryId);
         } catch (error) {

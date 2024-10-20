@@ -2,7 +2,6 @@ const PostModel = require('../models/model.post');
 const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
-const { Post, Like } = require('../database/db.model.db');
 
 exports.getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -77,7 +76,7 @@ exports.createPost = async (req, res) => {
         const newPost = await PostModel.create({ title, content, userId: req.user.id });
 
         if (categories && categories.length > 0) {
-            const categoriesObjects = await CategoryModel.findAll(categories);
+            const categoriesObjects = await CategoryModel.getAll(categories);
             await newPost.setCategories(categoriesObjects);
         }
 
@@ -143,7 +142,7 @@ exports.updatePost = async (req, res) => {
         await post.save();
 
         if (categories && categories.length > 0) {
-            const updatedCategories = await CategoryModel.findAll(categories);
+            const updatedCategories = await CategoryModel.getAll(categories);
             await post.setCategories(updatedCategories);
         }
 
