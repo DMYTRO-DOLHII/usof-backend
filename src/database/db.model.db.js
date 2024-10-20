@@ -1,6 +1,5 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/db.config');
-const { validate } = require('uuid');
 const logger = require('../utils/logger');
 
 const User = sequelize.define('User', {
@@ -33,7 +32,7 @@ const User = sequelize.define('User', {
     },
     emailConfirmed: {
         type: DataTypes.BOOLEAN,
-        defaultValue: false
+        defaultValue: false,
     },
     profilePicture: {
         type: DataTypes.STRING,
@@ -112,29 +111,37 @@ const Like = sequelize.define('Like', {
 });
 
 // Relationships
-Post.belongsTo(User, { as: 'user', foreignKey: 'userId'});
-Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' });
-Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' });
-Post.hasMany(Like, { foreignKey: 'postId', as: 'likes' });
 
-Comment.belongsTo(Post, { foreignKey: 'postId' });
+// Post relationships
+Post.belongsTo(User, { as: 'user', foreignKey: 'userId' }); // Each post belongs to a user (author)
+Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' }); // Many-to-Many between Post and Category
+Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' }); // Each post can have multiple comments
+Post.hasMany(Like, { foreignKey: 'postId', as: 'likes' }); // Each post can have multiple likes
 
-Like.belongsTo(Post, { foreignKey: 'postId' });
+// Category relationships
+Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' }); // Many-to-Many between Category and Post
 
-Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' });
+// Comment relationships
+Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each comment belongs to a post
+Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each comment belongs to a user (author)
 
+// Like relationships
+Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each like belongs to a post
+Like.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each like belongs to a user (author)
+
+// Sync database and tables
 (async () => {
     try {
         await sequelize
-            .sync({ force: false })
+            .sync({ force: false }) // Set force: true for recreating tables during development
             .then(() => {
                 logger.info("Tables created successfully");
             })
             .catch((error) => {
-                logger.error(error.message);
+                logger.error("Error creating tables: ", error.message);
             });
     } catch (error) {
-        logger.error(error.message);
+        logger.error("Error during table synchronization: ", error.message);
     }
 })();
 

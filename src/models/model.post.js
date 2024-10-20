@@ -51,6 +51,15 @@ class PostModel {
         }
     }
 
+    static async findWithCategories(postId) {
+        try {
+            return await Post.findByPk(postId, { include: 'categories' });
+        } catch (error) {
+            logger.error(error.message);
+            throw error;
+        }
+    }
+
     static async updatePost(postId, updateData) {
         try {
             await Post.update(updateData, { where: { id: postId } });

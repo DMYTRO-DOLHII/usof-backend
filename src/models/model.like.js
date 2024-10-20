@@ -2,12 +2,21 @@ const { Like } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 class LikeModel {
-    static async create({ userId, postId }) {
+    static async create({ userId, postId, type }) {
         try {
-            const newLike = await Like.create({ userId, postId });
+            const newLike = await Like.create({ userId, postId, type });
             return newLike;
         } catch (error) {
             logger.error(`Like creation error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async find({ userId, postId }) {
+        try {
+            return await Like.findOne({ where: { postId: postId, userId: userId } });
+        } catch (error) {
+            logger.error(error.message);
             throw error;
         }
     }

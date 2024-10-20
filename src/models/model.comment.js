@@ -4,12 +4,11 @@ const logger = require('../utils/logger');
 class CommentModel {
     static async create({ content, userId, postId }) {
         try {
-            const newComment = await Comment.create({
+            return await Comment.create({
                 content,
                 userId,
                 postId
             });
-            return newComment;
         } catch (error) {
             logger.error(`Comment creation error: ${error.message}`);
             throw error;

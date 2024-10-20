@@ -1,5 +1,6 @@
-const { Category } = require('../database/db.model.db');
+const { Category, Post } = require('../database/db.model.db');
 const logger = require('../utils/logger');
+const { Op } = require('sequelize');
 
 class CategoryModel {
     static async create(title) {
@@ -16,6 +17,41 @@ class CategoryModel {
             return await Category.findAll();
         } catch (error) {
             logger.error(`Fetching categories error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findAll(titles) {
+        try {
+            return await Category.findAll({
+                where: {
+                    title: { [Op.in]: titles }
+                }
+            });
+        } catch (error) {
+            logger.error(error.message);
+            throw error;
+        }
+    }
+
+    static async findAllByPostId(postId) {
+        try {
+            const categories = await Category.findAll({
+                include: {
+                    model: Post,
+                    as: 'posts',
+                    through: {
+                        attributes: []
+                    }
+                },
+                where: {
+                    id: postId
+                }
+            });
+
+            return categories;
+        } catch (error) {
+            logger.error(error.message);
             throw error;
         }
     }

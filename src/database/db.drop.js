@@ -2,10 +2,11 @@ const { Sequelize } = require('sequelize');
 require("dotenv").config();
 const logger = require("../utils/logger");
 
+// Connect to PostgreSQL using the default admin user
 const sequelize = new Sequelize(process.env.DB_ADMIN_DB, process.env.DB_ADMIN_USER, process.env.DB_ADMIN_PASSWORD, {
     host: process.env.DB_HOST,
     dialect: 'postgres',
-    logging: false,
+    logging: false, // Disable logging
 });
 
 const deleteUserAndDatabase = async () => {
@@ -13,38 +14,43 @@ const deleteUserAndDatabase = async () => {
         await sequelize.authenticate();
         logger.info('Connection to default database established successfully.');
 
-        await sequelize.query(`
-            SELECT pg_terminate_backend(pg_stat_activity.pid)
-            FROM pg_stat_activity
-            WHERE pg_stat_activity.datname = 'usof-backend'
-            AND pid <> pg_backend_pid();
+        // Check if the database exists before attempting to drop it
+        const dbExists = await sequelize.query(`
+            SELECT 1 FROM pg_database WHERE datname = '${process.env.DB_NAME}';
         `);
-        logger.info('Terminated all active connections to the "usof-backend" database.');
+        if (dbExists[0].length > 0) {
+            // If the database exists, drop it
+            await sequelize.query(`
+                DROP DATABASE IF EXISTS "${process.env.DB_NAME}";
+            `);
+            logger.info(`Database "${process.env.DB_NAME}" dropped successfully.`);
+        } else {
+            logger.info(`Database "${process.env.DB_NAME}" does not exist. Skipping database drop.`);
+        }
 
-        await sequelize.query(`
-            REVOKE ALL PRIVILEGES ON DATABASE "usof-backend" FROM "test-usof-user";
+        // Check if the user exists before attempting to drop it
+        const userExists = await sequelize.query(`
+            SELECT 1 FROM pg_roles WHERE rolname = '${process.env.DB_USER}';
         `);
-        logger.info('Revoked all privileges from "test-usof-user".');
+        if (userExists[0].length > 0) {
+            // Check if the user owns any objects in the database before dropping it
+            const dependentObjects = await sequelize.query(`
+                SELECT COUNT(*) FROM pg_class
+                WHERE relowner = (SELECT usesysid FROM pg_user WHERE usename = '${process.env.DB_USER}');
+            `);
 
-        await sequelize.query(`
-            REASSIGN OWNED BY "test-usof-user" TO "postgres"; 
-        `);
-        logger.info('Reassigned ownership of objects from "test-usof-user" to "postgres".');
-
-        await sequelize.query(`
-            DROP OWNED BY "test-usof-user";
-        `);
-        logger.info('Dropped all objects owned by "test-usof-user".');
-
-        await sequelize.query(`
-            DROP USER IF EXISTS "test-usof-user";
-        `);
-        logger.info('User "test-usof-user" deleted successfully.');
-
-        await sequelize.query(`
-            DROP DATABASE IF EXISTS "usof-backend";
-        `);
-        logger.info('Database "usof-backend" dropped successfully.');
+            if (dependentObjects[0][0].count === '0') {
+                // If no dependent objects, drop the user
+                await sequelize.query(`
+                    DROP USER IF EXISTS "${process.env.DB_USER}";
+                `);
+                logger.info(`User "${process.env.DB_USER}" dropped successfully.`);
+            } else {
+                logger.warn(`User "${process.env.DB_USER}" owns objects and cannot be dropped.`);
+            }
+        } else {
+            logger.info(`User "${process.env.DB_USER}" does not exist. Skipping user drop.`);
+        }
 
     } catch (error) {
         logger.error('Error deleting user or database:', error);
