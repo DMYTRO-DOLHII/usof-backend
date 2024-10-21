@@ -76,7 +76,7 @@ exports.createPost = async (req, res) => {
         const newPost = await PostModel.create({ title, content, userId: req.user.id });
 
         if (categories && categories.length > 0) {
-            const categoriesObjects = await CategoryModel.getAll(categories);
+            const categoriesObjects = await CategoryModel.findAllCategories(categories);
             await newPost.setCategories(categoriesObjects);
         }
 
@@ -142,7 +142,7 @@ exports.updatePost = async (req, res) => {
         await post.save();
 
         if (categories && categories.length > 0) {
-            const updatedCategories = await CategoryModel.getAll(categories);
+            const updatedCategories = await CategoryModel.findAllCategories(categories);
             await post.setCategories(updatedCategories);
         }
 

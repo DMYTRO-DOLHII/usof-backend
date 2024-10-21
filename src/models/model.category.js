@@ -12,15 +12,9 @@ class CategoryModel {
         }
     }
 
-    static async getAll() {
+    static async findAllCategories() {
         try {
-            const categories = await Category.findAll();
-
-            if (!categories || categories.length === 0) {
-                logger.warn("No categories found");
-            }
-
-            return categories;
+            return await Category.findAll();
         } catch (error) {
             logger.error(`Fetching categories error: ${error.message}`);
             throw error;
@@ -72,11 +66,12 @@ class CategoryModel {
                 limit: limit,
                 offset: offset
             });
-    
+
             if (!categoryWithPosts) {
-                throw new Error('Category not found');
+                logger.warn("Category could not be found!");
+                return { totalPosts: 0, posts: [] };
             }
-    
+
             return {
                 totalPosts: categoryWithPosts.posts.length,
                 posts: categoryWithPosts.posts
@@ -86,7 +81,7 @@ class CategoryModel {
             throw error;
         }
     }
-    
+
 
     static async findById(categoryId) {
         try {

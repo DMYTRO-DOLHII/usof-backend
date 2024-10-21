@@ -4,7 +4,8 @@ const Post = require('../models/model.post');
 
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await CategoryModel.getAll();
+        console.log("WE ARE HERE 1.1");
+        const categories = await CategoryModel.findAllCategories();
 
         if (!categories || categories.length === 0) {
             return res.status(404).json({ message: 'No categories found' });
@@ -57,7 +58,7 @@ exports.createCategory = async (req, res) => {
     }
 
     try {
-        const newCategory = await Category.create({ title });
+        const newCategory = await CategoryModel.create(title);
         return res.status(201).json({ message: 'Category created successfully', category: newCategory });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -66,15 +67,16 @@ exports.createCategory = async (req, res) => {
 
 exports.updateCategory = async (req, res) => {
     const { category_id } = req.params;
-    const { title } = req.body;
+    const { title, description } = req.body;
 
     try {
-        const category = await Category.findByPk(category_id);
+        const category = await CategoryModel.findById(category_id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
 
         category.title = title || category.title;
+        category.description = description || category.description;
         await category.save();
 
         return res.status(200).json({ message: 'Category updated successfully', category });
@@ -87,7 +89,7 @@ exports.deleteCategory = async (req, res) => {
     const { category_id } = req.params;
 
     try {
-        const category = await Category.findByPk(category_id);
+        const category = await CategoryModel.findById(category_id);
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
