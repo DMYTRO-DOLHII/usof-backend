@@ -1,5 +1,8 @@
 const express = require('express');
 const app = express();
+const swaggerUI = require("swagger-ui-express");
+const swaggerDoc = require('../swagger-output.json');
+
 require('dotenv').config();
 
 
@@ -9,7 +12,6 @@ const postsRouter = require('./routes/route.posts')
 const categoriesRouter = require('./routes/route.categories');
 const commentsRouter = require('./routes/route.comments');
 
-// Middleware for parsing incoming requests with JSON payloads
 app.use(express.json());
 
 app.use('/api/auth', authRouter);
@@ -18,10 +20,10 @@ app.use('/api/posts/', postsRouter);
 app.use('/api/categories/', categoriesRouter);
 app.use('/api/comments', commentsRouter);
 
-// A basic route for testing the server setup
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(swaggerDoc));
+
 app.get('/', (req, res) => {
     res.send('Welcome to USOF Backend API!');
 });
 
-// Export the app for use in index.js
 module.exports = app;
