@@ -1,7 +1,4 @@
-const bcrypt = require('bcrypt');
 const UserModel = require('../models/model.user');
-const jwt = require('jsonwebtoken');
-const { User } = require('../database/db.model.db');
 
 exports.getAllUsers = async (req, res) => {
     try {
@@ -52,13 +49,15 @@ exports.uploadUserAvatar = async (req, res) => {
         return res.status(400).json({ message: 'Avatar file is required' });
     }
 
+    console.log("PENIS");
+
     try {
         const user = await UserModel.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        user.avatar = req.file.path;
+        user.profilePicture = req.file.path;
         await user.save();
 
         return res.status(200).json({ message: 'Avatar uploaded successfully', avatar: user.avatar });
