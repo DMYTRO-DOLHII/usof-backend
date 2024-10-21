@@ -16,8 +16,6 @@ const storage = multer.diskStorage({
     },
 });
 
-console.log("PENIS")
-
 const fileFilter = (req, file, cb) => {
     const allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     if (allowedMimeTypes.includes(file.mimetype)) {

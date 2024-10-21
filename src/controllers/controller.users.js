@@ -48,9 +48,7 @@ exports.uploadUserAvatar = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Avatar file is required' });
     }
-
-    console.log("PENIS");
-
+    
     try {
         const user = await UserModel.findById(req.user.id);
         if (!user) {
