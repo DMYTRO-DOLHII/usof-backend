@@ -21,7 +21,7 @@ class CategoryModel {
         }
     }
 
-    static async getAll(titles) {
+    static async findAllCategories(titles) {
         try {
             return await Category.findAll({
                 where: {
