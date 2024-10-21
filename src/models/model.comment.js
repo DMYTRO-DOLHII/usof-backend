@@ -33,9 +33,9 @@ class CommentModel {
         }
     }
 
-    static async updateComment(commentId, updateData) {
+    static async updateComment(commentId, content) {
         try {
-            await Comment.update(updateData, { where: { id: commentId } });
+            await Comment.update(content, { where: { id: commentId } });
             return await Comment.findOne({ where: { id: commentId } });
         } catch (error) {
             logger.error(`Comment update error: ${error.message}`);

@@ -124,10 +124,13 @@ Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' }); // Man
 // Comment relationships
 Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each comment belongs to a post
 Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each comment belongs to a user (author)
+Comment.hasMany(Like, { foreignKey: 'commentId', as: 'likes' });
+
 
 // Like relationships
 Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each like belongs to a post
 Like.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each like belongs to a user (author)
+Like.belongsTo(Comment, { foreignKey: 'commentId', as: 'comment' });
 
 // Sync database and tables
 (async () => {

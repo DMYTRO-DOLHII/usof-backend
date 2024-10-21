@@ -5,7 +5,8 @@ const { validateToken } = require('../middlewares/middleware.auth');
 
 router.get('/:comment_id', commentController.getCommentById);
 router.get('/:comment_id/like', commentController.getLikesByCommentId);
-router.post('/:comment_id/like', commentController.createLike);
+
+router.post('/:comment_id/like', validateToken, commentController.createLike);
 
 router.patch('/:comment_id', validateToken, commentController.updateComment);
 

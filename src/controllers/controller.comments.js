@@ -1,3 +1,4 @@
+const { compareSync } = require('bcrypt');
 const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 
@@ -26,11 +27,29 @@ exports.getLikesByCommentId = async (req, res) => {
 
 exports.createLike = async (req, res) => {
     const { comment_id } = req.params;
-    const { userId } = req.body;
+    const { type } = req.body;
+    const userId = req.user.id;
 
     try {
-        const like = await LikeModel.create({ commentId: comment_id, userId });
-        return res.status(201).json({ message: 'Like added', like });
+        const comment = await CommentModel.findById(comment_id);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        const existingLike = await LikeModel.findByCommentUserId({ userId: userId, commentId: comment_id });
+        if (existingLike) {
+            return res.status(400).json({ message: 'You have already liked/disliked this comment' });
+        }
+
+        const like = await LikeModel.create({
+            userId: userId,
+            postId: comment.postId,
+            commentId: comment_id,
+            type: type
+        });
+
+        return res.status(201).json({ message: 'Like added successfully', like });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -38,14 +57,18 @@ exports.createLike = async (req, res) => {
 
 exports.updateComment = async (req, res) => {
     const { comment_id } = req.params;
-    const updateData = req.body;
+    const { content } = req.body;
 
     try {
-        const updatedComment = await CommentModel.updateComment(comment_id, updateData);
-        if (!updatedComment) {
+        const comment = await CommentModel.findById(comment_id);
+        if (!comment) {
             return res.status(404).json({ message: 'Comment not found' });
         }
-        return res.status(200).json({ message: 'Comment updated', updatedComment });
+
+        comment.content = content || comment.content;
+        await comment.save();
+        
+        return res.status(200).json({ message: 'Comment updated', comment });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
@@ -55,10 +78,12 @@ exports.deleteComment = async (req, res) => {
     const { comment_id } = req.params;
 
     try {
-        const deleted = await CommentModel.deleteComment(comment_id);
-        if (!deleted) {
+        const comment = await CommentModel.findById(comment_id);
+        if (!comment) {
             return res.status(404).json({ message: 'Comment not found' });
         }
+
+        await comment.destroy();
         return res.status(200).json({ message: 'Comment deleted' });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
@@ -67,13 +92,15 @@ exports.deleteComment = async (req, res) => {
 
 exports.deleteLike = async (req, res) => {
     const { comment_id } = req.params;
-    const { user_id } = req.body;
+    const userId = req.user.id;
 
     try {
-        const deleted = await LikeModel.deleteLike(comment_id, user_id);
-        if (!deleted) {
+        const like = await LikeModel.findByCommentUserId({ userId: userId, commentId: comment_id });
+        if (!like) {
             return res.status(404).json({ message: 'Like not found' });
         }
+
+        await like.destroy();
         return res.status(200).json({ message: 'Like deleted' });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });

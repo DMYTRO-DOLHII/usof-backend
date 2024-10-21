@@ -31,19 +31,18 @@ exports.registerUser = async (req, res) => {
             return res.status(400).json(`Email already registered`);
         }
 
-        // TODO: UserModel
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-
         const newUser = await User.create({
             login,
-            password: hashedPassword,
+            password: await bcrypt.hash(password, 10),
             fullName,
             email,
-            profilePicture,
         });
 
-        await sendConfirmationEmail(email, login);
+        const token = jwt.sign({ email: email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+
+        const confirmationLink = `${process.env.FRONTEND_URL}/confirm-email?token=${token}`;
+
+        await sendConfirmationEmail(email, login, confirmationLink);
 
         return res.status(201).json({ message: 'User registered successfully. Please confirm your email.' });
     } catch (error) {
@@ -99,7 +98,7 @@ exports.requestPasswordReset = async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ where: { email } });
+        const user = await UserModel.findByEmail(email);
 
         if (!user) {
             return res.status(404).json({ message: 'No user found with this email' });
@@ -113,6 +112,7 @@ exports.requestPasswordReset = async (req, res) => {
 
         const resetLink = `${process.env.FRONTEND_URL}/password-reset/${resetToken}`;
 
+        sendConfirmationEmail(user.email, user.login, resetLink);
 
         return res.status(200).json({ message: 'Password reset link sent to email' });
     } catch (error) {
@@ -137,8 +137,7 @@ exports.confirmPasswordReset = async (req, res) => {
             return res.status(400).json({ message: 'User not found' });
         }
 
-        user.password = await bcrypt.hash(newPassword, 10);;
-        user.resetToken = null;
+        user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
 
         return res.status(200).json({ message: 'Password reset successfully' });

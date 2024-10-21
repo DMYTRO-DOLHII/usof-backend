@@ -4,7 +4,6 @@ const Post = require('../models/model.post');
 
 exports.getAllCategories = async (req, res) => {
     try {
-        console.log("WE ARE HERE 1.1");
         const categories = await CategoryModel.findAllCategories();
 
         if (!categories || categories.length === 0) {

@@ -11,11 +11,9 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-const sendConfirmationEmail = async (userEmail, userLogin) => {
+const sendConfirmationEmail = async (userEmail, userLogin, link) => {
     try {
         const token = jwt.sign({ email: userEmail }, SECRET_KEY, { expiresIn: '1h' });
-
-        const confirmationLink = `${process.env.FRONTEND_URL}/confirm-email?token=${token}`;
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
@@ -24,7 +22,7 @@ const sendConfirmationEmail = async (userEmail, userLogin) => {
             html: `
                 <h3>Hello ${userLogin},</h3>
                 <p>Please click the link below to confirm your email:</p>
-                <a href="${confirmationLink}">Confirm Email</a>
+                <a href="${link}">Confirm Email</a>
                 <p>This link will expire in 1 hour.</p>
             `,
         };
