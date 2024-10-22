@@ -96,7 +96,7 @@ npm install
 ### Step 6: Set Up the Database
 Before starting the project, you need to create the database in PostgreSQL:
 
-Create the database:
+**Create the database:**
 
 ```bash
 npm run db:create
@@ -104,11 +104,15 @@ npm run db:create
 
 This will create a new database based on the configuration from your .env file.
 
+**This will drop the database:**
 ```bash
 npm run db:drop
 ```
 
-This will drop the database.
+**This will create test records in all the tables with relationships:**
+```bash
+npm run db:fill
+```
 
 ### Step 7: Run the Project
 After setting up the database, you can start the project in development mode by running:
