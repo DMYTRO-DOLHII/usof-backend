@@ -110,8 +110,20 @@ const Like = sequelize.define('Like', {
     timestamps: false,
 });
 
-// Relationships
+const Favourite = sequelize.define('Favourite', {
+    userId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    postId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+}, {
+    timestamps: false,
+});
 
+// Relationships
 // Post relationships
 Post.belongsTo(User, { as: 'user', foreignKey: 'userId' }); // Each post belongs to a user (author)
 Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' }); // Many-to-Many between Post and Category
@@ -131,6 +143,10 @@ Comment.hasMany(Like, { foreignKey: 'commentId', as: 'likes' });
 Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each like belongs to a post
 Like.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each like belongs to a user (author)
 Like.belongsTo(Comment, { foreignKey: 'commentId', as: 'comment' });
+
+// Favorite relationships
+Favourite.belongsTo(User, { foreignKey: 'userId' }); // Each Favourite belongs to a user
+Favourite.belongsTo(Post, { foreignKey: 'postId' }); // Each Favourite belongs to a post
 
 // Sync database and tables
 (async () => {
@@ -153,5 +169,6 @@ module.exports = {
     Post,
     Category,
     Comment,
-    Like
+    Like,
+    Favourite
 };
