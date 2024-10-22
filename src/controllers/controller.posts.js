@@ -2,6 +2,7 @@ const PostModel = require('../models/model.post');
 const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
+const UserModel = require('../models/model.user');
 
 exports.getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -104,8 +105,54 @@ exports.createComment = async (req, res) => {
 
 exports.createPostLike = async (req, res) => {
     const { post_id } = req.params;
+    const { type } = req.body;
     try {
-        const newLike = await LikeModel.create({ postId: post_id, userId: req.user.id, type: 'like' });
+        if (!type) {
+            return res.status(404).json({ message: "Like type is missing" });
+        }
+
+        const post = await PostModel.findById(post_id);
+        if (!post) {
+            return res.status(404).json({ message: "Post was not found" });
+        }
+
+        const user = await UserModel.findById(post.userId);
+
+        const existingLike = await LikeModel.find({ userId: req.user.id, postId: post_id });
+        if (existingLike) {
+            if (existingLike.type === type) {
+                if (type === 'like') {
+                    await existingLike.destroy();
+                    user.rating -= 1;
+                    await user.save();
+                    return res.status(201).json({ message: "Like deleted" });
+                } else {
+                    await existingLike.destroy();
+                    user.rating += 1;
+                    await user.save();
+                    return res.status(201).json({ message: "Dislike deleted" });
+                }
+            } else {
+                if (type === 'like') {
+                    existingLike.type = type;
+                    user.rating += 2;
+                    await user.save();
+                    return res.status(201).json({ message: "Dislike deleted, Like added" });
+                } else {
+                    existingLike.type = type;
+                    user.rating -= 2;
+                    await user.save();
+                    return res.status(201).json({ message: "Like deleted, Dislike added" });
+                }
+            }
+        }
+
+        const newLike = await LikeModel.create({ postId: post_id, userId: req.user.id, type: type });
+        if (type === 'like') user.rating++;
+        else user.rating--;
+
+        await user.save();
+
         return res.status(201).json({ message: 'Like added successfully', like: newLike });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });

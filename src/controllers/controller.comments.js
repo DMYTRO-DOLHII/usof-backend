@@ -37,9 +37,35 @@ exports.createLike = async (req, res) => {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
+        const user = await UserModel.findById(post.userId);
+
         const existingLike = await LikeModel.findByCommentUserId({ userId: userId, commentId: comment_id });
         if (existingLike) {
-            return res.status(400).json({ message: 'You have already liked/disliked this comment' });
+            if (existingLike.type === type) {
+                if (type === 'like') {
+                    await existingLike.destroy();
+                    user.rating -= 1;
+                    await user.save();
+                    return res.status(201).json({ message: "Like deleted" });
+                } else {
+                    await existingLike.destroy();
+                    user.rating += 1;
+                    await user.save();
+                    return res.status(201).json({ message: "Dislike deleted" });
+                }
+            } else {
+                if (type === 'like') {
+                    existingLike.type = type;
+                    user.rating += 2;
+                    await user.save();
+                    return res.status(201).json({ message: "Dislike deleted, Like added" });
+                } else {
+                    existingLike.type = type;
+                    user.rating -= 2;
+                    await user.save();
+                    return res.status(201).json({ message: "Like deleted, Dislike added" });
+                }
+            }
         }
 
         const like = await LikeModel.create({
@@ -48,6 +74,11 @@ exports.createLike = async (req, res) => {
             commentId: comment_id,
             type: type
         });
+
+        if (type === 'like') user.rating++;
+        else user.rating--;
+
+        await user.save();
 
         return res.status(201).json({ message: 'Like added successfully', like });
     } catch (error) {
@@ -67,7 +98,7 @@ exports.updateComment = async (req, res) => {
 
         comment.content = content || comment.content;
         await comment.save();
-        
+
         return res.status(200).json({ message: 'Comment updated', comment });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
