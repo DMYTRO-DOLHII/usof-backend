@@ -17,7 +17,7 @@ const favouriteRouter = require('./routes/route.favourite');
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Welcome to USOF Backend API!');
+    res.send('Admin: http://localhost:3000/admin\nDox: http://localhost:3000/api-docs');
 });
 
 
