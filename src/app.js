@@ -3,6 +3,7 @@ const app = express();
 const swaggerUI = require("swagger-ui-express");
 const swaggerDoc = require('../swagger-output.json');
 const adminRouter = require('./utils/admin');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -17,7 +18,7 @@ const favouriteRouter = require('./routes/route.favourite');
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Admin: http://localhost:3000/admin\nDox: http://localhost:3000/api-docs');
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
 
