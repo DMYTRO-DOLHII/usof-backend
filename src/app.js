@@ -4,6 +4,7 @@ const swaggerUI = require("swagger-ui-express");
 const swaggerDoc = require('../swagger-output.json');
 const adminRouter = require('./utils/admin');
 const path = require('path');
+const cors = require('cors');
 
 require('dotenv').config();
 
@@ -16,6 +17,8 @@ const commentsRouter = require('./routes/route.comments');
 const favouriteRouter = require('./routes/route.favourite');
 
 app.use(express.json());
+
+app.use(cors({origin: process.env.FRONT_URL}));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));

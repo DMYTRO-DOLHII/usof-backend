@@ -12,7 +12,7 @@ const validateToken = (req, res, next) => {
         return res.status(401).json({ error: 'Unauthorized. No token provided.' });
     }
 
-    console.log(token);
+    logger.info(token);
 
     jwt.verify(token, SECRET_KEY, (err, decoded) => {
         if (err) {

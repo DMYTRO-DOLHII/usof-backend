@@ -10,9 +10,9 @@ const logger = require('../utils/logger');
 const { User } = require('../database/db.model.db');
 
 exports.registerUser = async (req, res) => {
-    const { login, email, fullName, password, confirmPassword } = req.body;
+    const { login, email, fullName, password } = req.body;
 
-    if (!login || !password || !confirmPassword || !email || !fullName) {
+    if (!login || !password || !email || !fullName) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -51,30 +51,30 @@ exports.registerUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
-    const { login, email, password } = req.body;
+    const { login, password } = req.body;
 
-    if (!login || !email || !password) {
+    if (!login || !password) {
         return res.status(400).json({ message: 'All fields are required' });
     }
 
     try {
-        const user = await UserModel.findUser({ login, email });
+        const user = await UserModel.findUser(login);
 
         if (!user) {
-            logger.info('Invalid login or email');
-            return req.status(400).json({ message: 'Invalid login or email' });
-        }  
-
-        if (!user.emailConfirmed) {
-            logger.info('Please confirm your email to log in');
-            return req.status(403).json({ message: 'Please confirm your email to log in' });
+            logger.info('Invalid login');
+            return res.status(403).json({ message: 'Invalid login' });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        if (!isPasswordValid) {
-            logger.info('Invalid password');
-            return { status: 400, message: 'Invalid password' };
+        if (user.login !== login || !isPasswordValid) {
+            logger.info('Invalid login or password');
+            return res.status(403).json({ message: 'Invalid login or password' });
+        }
+
+        if (!user.emailConfirmed) {
+            logger.info('Please confirm your email to log in');
+            return res.status(403).json({ message: 'Please confirm your email to log in' });
         }
 
         const token = generateToken(user);

@@ -41,6 +41,22 @@ class UserModel {
         }
     }
 
+    static async findUser(login) {
+        try {
+            return await User.findOne({
+                where: {
+                    [Op.or]: [
+                        { login },
+                        { email: login }
+                    ]
+                }
+            });
+        } catch (error) {
+            logger.error(error);
+            throw error;
+        }
+    }
+
     static async createUser({ login, password, email, fullName, role }) {
         try {
             return await User.create({
