@@ -25,6 +25,19 @@ class PostModel {
         }
     }
 
+    static async findAllAndCount({ limit, offset }) {
+        try {
+            return await Post.findAndCountAll({
+                limit,
+                offset,
+                order: [['publishDate', 'DESC']],
+            });
+        } catch (error) {
+            logger.error(`Fetching posts error: ${error.message}`);
+            throw error;
+        }
+    }
+
     static async findById(postId) {
         try {
             return await Post.findOne({ where: { id: postId } });

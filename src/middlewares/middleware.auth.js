@@ -29,7 +29,7 @@ const validateToken = (req, res, next) => {
 const isAdmin = async (req, res, next) => {
     const user = await UserModel.findById(req.user.id);
     if (user.role !== 'admin') {
-        return res.status(403).json({ message: 'Admin access required' });
+        return res.status(403).json({ message: 'Admin access required' });w
     }
     next();
 };

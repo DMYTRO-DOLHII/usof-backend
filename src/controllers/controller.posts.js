@@ -3,6 +3,20 @@ const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
 const UserModel = require('../models/model.user');
+const { Post } = require('../database/db.model.db');
+
+// exports.getAllPosts = async (req, res) => {
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 10;
+//     const offset = (page - 1) * limit;
+
+//     try {
+//         const posts = await PostModel.findAll({ limit, offset });
+//         return res.status(200).json({ posts });
+//     } catch (error) {
+//         return res.status(500).json({ message: 'Server error. Please try again later.' });
+//     }
+// };
 
 exports.getAllPosts = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -10,8 +24,18 @@ exports.getAllPosts = async (req, res) => {
     const offset = (page - 1) * limit;
 
     try {
-        const posts = await PostModel.findAll({ limit, offset });
-        return res.status(200).json({ posts });
+        const { count, rows: posts } = await PostModel.findAllAndCount({ limit, offset });
+
+        const totalPages = Math.ceil(count / limit);
+
+        return res.status(200).json({
+            posts,
+            pagination: {
+                totalItems: count,
+                currentPage: page,
+                totalPages,
+            },
+        });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
