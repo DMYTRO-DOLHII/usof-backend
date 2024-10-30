@@ -1,4 +1,4 @@
-# USOF Backend Project
+# McOk (USOF Backend Project) 
 
 This is the backend of the USOF (User Stack Overflow) project, a question-and-answer service for programmers. It’s built using Node.js, PostgreSQL, and Sequelize, following the MVC pattern, OOP paradigm, and SOLID principles. This README will guide you through the installation process, setup, and running of the project.
 
@@ -61,15 +61,26 @@ cd usof-backend
 Create a .env file in the root of the project and set up the following required environment variables:
 
 ```ini
-# .env file
+# .env file example
 DB_HOST=localhost
-DB_USER=your_postgres_username
-DB_PASSWORD=your_postgres_password
-DB_NAME=usof_db
+DB_DIALECT=postgres
 DB_PORT=5432
-PORT=3000
-JWT_SECRET=your_jwt_secret_key
-NODE_ENV=development
+
+DB_ADMIN_DB=postgres
+DB_ADMIN_USER=postgres
+DB_ADMIN_PASSWORD=12345678
+
+DB_NAME=usof-backend
+DB_USER=test-usof-user
+DB_PASSWORD=test
+
+EMAIL_USER=dolgiy.dmitriyp@gmail.com
+EMAIL_PASS=hnml epmi cyzg qewr
+
+FRONT_URL=http://localhost:8080
+SECRET_KEY=your_jwt_secret_key
+TOKEN_EXPIRES=1h
+
 ```
 
 > **DB_HOST**: The host of your PostgreSQL server (usually `localhost`).

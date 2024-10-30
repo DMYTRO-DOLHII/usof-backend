@@ -40,7 +40,7 @@ exports.registerUser = async (req, res) => {
 
         const token = jwt.sign({ email: email }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
-        const confirmationLink = `${process.env.FRONTEND_URL}/confirm-email?token=${token}`;
+        const confirmationLink = `${process.env.FRONT_URL}/confirm-email?token=${token}`;
 
         await sendConfirmationEmail(email, login, confirmationLink);
 
@@ -110,7 +110,7 @@ exports.requestPasswordReset = async (req, res) => {
         user.resetToken = resetTokenHash;
         await user.save();
 
-        const resetLink = `${process.env.FRONTEND_URL}/password-reset/${resetToken}`;
+        const resetLink = `${process.env.FRONT_URL}/password-reset/${resetToken}`;
 
         sendConfirmationEmail(user.email, user.login, resetLink);
 
