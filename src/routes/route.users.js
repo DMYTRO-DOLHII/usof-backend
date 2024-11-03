@@ -4,8 +4,8 @@ const userController = require('../controllers/controller.users');
 const { validateToken, isAdmin } = require('../middlewares/middleware.auth');
 const upload = require('../middlewares/middlware.upload');
 
-router.get('/', validateToken, userController.getAllUsers);
-router.get('/:user_id', validateToken, userController.getUserById);
+router.get('/', userController.getAllUsers);
+router.get('/:user_id', userController.getUserById);
 
 router.post('/', [validateToken, isAdmin], userController.createUser);
 

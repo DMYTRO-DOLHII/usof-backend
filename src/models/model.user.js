@@ -8,6 +8,19 @@ class UserModel {
         return await User.findAll();
     }
 
+    static async findAllAndCount({ limit, offset, order }) {
+        try {
+            return await User.findAndCountAll({
+                limit,
+                offset,
+                order: [[order, 'DESC']],
+            });
+        } catch (error) {
+            logger.error(`Fetching users error: ${error.message}`);
+            throw error;
+        }
+    }
+
     static async findById(user_id) {
         return await User.findOne({ where: { id: user_id } });
     }

@@ -1,13 +1,36 @@
 const UserModel = require('../models/model.user');
 
 exports.getAllUsers = async (req, res) => {
+    const { page, limit, order = 'rating' } = req.query;
+
     try {
-        const users = await UserModel.getAllUsers();
-        return res.status(200).json(users);
+        if (page && limit) {
+            const pageNumber = parseInt(page) || 1;
+            const limitNumber = parseInt(limit) || 30;
+            const offset = (pageNumber - 1) * limitNumber;
+
+            const { count, rows: users } = await UserModel.findAllAndCount({ limit, offset, order });
+
+            const totalPages = Math.ceil(count / limit);
+
+            return res.status(200).json({
+                users,
+                pagination: {
+                    totalUsers: count,
+                    currentPage: page,
+                    totalPages,
+                },
+            });
+        } else {
+            const users = await UserModel.getAllUsers();
+            return res.status(200).json({ users });
+        }
     } catch (error) {
+        console.error("Error fetching users:", error);
         return res.status(500).json({ message: 'Failed to fetch users' });
     }
 };
+
 
 exports.getUserById = async (req, res) => {
     const { user_id } = req.params;
@@ -48,7 +71,7 @@ exports.uploadUserAvatar = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ message: 'Avatar file is required' });
     }
-    
+
     try {
         const user = await UserModel.findById(req.user.id);
         if (!user) {

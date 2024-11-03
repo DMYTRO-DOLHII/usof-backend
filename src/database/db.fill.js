@@ -60,7 +60,7 @@ async function seedDatabase() {
         }
 
         const posts = [];
-        for (let i = 0; i < MIN_ROWS; i++) {
+        for (let i = 0; i < 100; i++) {
             const post = await Post.create({
                 title: faker.lorem.sentence(),
                 status: faker.helpers.arrayElement(['active', 'inactive']),
