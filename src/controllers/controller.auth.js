@@ -36,6 +36,7 @@ exports.registerUser = async (req, res) => {
             password: await bcrypt.hash(password, 10),
             fullName,
             email,
+            profilePicture: 'uploads/default.png'
         });
 
         const token = jwt.sign({ email: email }, process.env.SECRET_KEY, { expiresIn: '1h' });
@@ -147,7 +148,7 @@ exports.confirmPasswordReset = async (req, res) => {
 };
 
 exports.confirmEmail = async (req, res) => {
-    const { token } = req.params;
+    const { token } = req.body;
 
     if (!token) {
         return res.status(400).json({ message: 'Token is required' });
