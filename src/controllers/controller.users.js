@@ -81,7 +81,7 @@ exports.uploadUserAvatar = async (req, res) => {
         user.profilePicture = req.file.path;
         await user.save();
 
-        return res.status(200).json({ message: 'Avatar uploaded successfully', avatar: user.avatar });
+        return res.status(200).json({ message: 'Avatar uploaded successfully', user });
     } catch (error) {
         return res.status(500).json({ message: 'Error uploading avatar' });
     }
