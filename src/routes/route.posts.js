@@ -5,6 +5,7 @@ const { validateToken, authorizePostCreator } = require('../middlewares/middlewa
 
 router.get('/', postController.getAllPosts);
 router.get('/:post_id', postController.getPostById);
+router.get('/', postController.getPostsBySearch);
 router.get('/:post_id/comments', postController.getPostComments);
 router.get('/:post_id/categories', postController.getPostCategories);
 router.get('/:post_id/like', postController.getPostLikes);

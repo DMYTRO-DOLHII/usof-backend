@@ -41,6 +41,30 @@ exports.getAllPosts = async (req, res) => {
     }
 };
 
+exports.getPostsBySearch = async (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 30;
+    const search = req.query.search;
+    const offset = (page - 1) * limit;
+
+    try {
+        const { count, rows: posts } = await PostModel.findAllBySearchAndCount({ limit, offset, search });
+
+        const totalPages = Math.ceil(count / limit);
+
+        return res.status(200).json({
+            posts,
+            pagination: {
+                totalItems: count,
+                currentPage: page,
+                totalPages,
+            },
+        });
+    } catch (error) {
+        return res.status(500).json({ message: 'Server error. Please try again later.' });
+    };
+}
+
 exports.getPostById = async (req, res) => {
     const { post_id } = req.params;
     try {

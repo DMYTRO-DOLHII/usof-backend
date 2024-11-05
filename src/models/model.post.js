@@ -1,4 +1,5 @@
 const { Post, Category } = require('../database/db.model.db');
+const { Op } = require('sequelize');
 const logger = require('../utils/logger');
 
 class PostModel {
@@ -48,8 +49,36 @@ class PostModel {
                     {
                         model: Category,
                         as: 'categories',
-                        attributes: ['id', 'title'], // Select the attributes you want for each category
-                        through: { attributes: [] } // Exclude the junction table attributes
+                        attributes: ['id', 'title'],
+                        through: { attributes: [] }
+                    }
+                ],
+                distinct: true
+            });
+        } catch (error) {
+            logger.error(`Fetching posts error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findAllBySearchAndCount({ limit, offset, search }) {
+        try {
+            return await Post.findAndCountAll({
+                limit,
+                offset,
+                order: [['publishDate', 'DESC']],
+                where: {
+                    [Op.or]: [
+                        { title: { [Op.like]: `${search}%` } },
+                        { content: { [Op.like]: `${search}%` } }
+                    ]
+                },
+                include: [
+                    {
+                        model: Category,
+                        as: 'categories',
+                        attributes: ['id', 'title'],
+                        through: { attributes: [] }
                     }
                 ],
                 distinct: true
