@@ -25,12 +25,34 @@ class PostModel {
         }
     }
 
+    // static async findAllAndCount({ limit, offset }) {
+    //     try {
+    //         return await Post.findAndCountAll({
+    //             limit,
+    //             offset,
+    //             order: [['publishDate', 'DESC']],
+    //         });
+    //     } catch (error) {
+    //         logger.error(`Fetching posts error: ${error.message}`);
+    //         throw error;
+    //     }
+    // }
+
     static async findAllAndCount({ limit, offset }) {
         try {
             return await Post.findAndCountAll({
                 limit,
                 offset,
                 order: [['publishDate', 'DESC']],
+                include: [
+                    {
+                        model: Category,
+                        as: 'categories',
+                        attributes: ['id', 'title'], // Select the attributes you want for each category
+                        through: { attributes: [] } // Exclude the junction table attributes
+                    }
+                ],
+                distinct: true
             });
         } catch (error) {
             logger.error(`Fetching posts error: ${error.message}`);
