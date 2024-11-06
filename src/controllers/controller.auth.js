@@ -68,7 +68,7 @@ exports.loginUser = async (req, res) => {
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
-        if (user.login !== login || !isPasswordValid) {
+        if (!isPasswordValid) {
             logger.info('Invalid login or password');
             return res.status(403).json({ message: 'Invalid login or password' });
         }
@@ -104,11 +104,7 @@ exports.requestPasswordReset = async (req, res) => {
             return res.status(404).json({ message: 'No user found with this email' });
         }
 
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenHash = await bcrypt.hash(resetToken, 10);
-
-        user.resetToken = resetTokenHash;
-        await user.save();
+        const resetToken = jwt.sign({ email: email }, process.env.SECRET_KEY, { expiresIn: '1h' });
 
         const resetLink = `${process.env.FRONT_URL}/password-reset/${resetToken}`;
 
@@ -129,7 +125,7 @@ exports.confirmPasswordReset = async (req, res) => {
     }
 
     try {
-        const decode_v2 = jwt.verify(confirmToken, process.env.JWT_SECRET);
+        const decode_v2 = jwt.verify(confirmToken, process.env.SECRET_KEY);
 
         const user = await UserModel.findByEmail(decode_v2.email);
 
@@ -142,6 +138,7 @@ exports.confirmPasswordReset = async (req, res) => {
 
         return res.status(200).json({ message: 'Password reset successfully' });
     } catch (error) {
+        logger.error(error.message);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };

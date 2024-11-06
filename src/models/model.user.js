@@ -59,7 +59,7 @@ class UserModel {
             return await User.findOne({
                 where: {
                     [Op.or]: [
-                        { login },
+                        { login: login },
                         { email: login }
                     ]
                 }
