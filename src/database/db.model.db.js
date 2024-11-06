@@ -125,28 +125,28 @@ const Favourite = sequelize.define('Favourite', {
 
 // Relationships
 // Post relationships
-Post.belongsTo(User, { as: 'user', foreignKey: 'userId' }); // Each post belongs to a user (author)
+Post.belongsTo(User, { as: 'user', foreignKey: 'userId', onDelete: 'CASCADE' }); // Each post belongs to a user (author)
 Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' }); // Many-to-Many between Post and Category
-Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments' }); // Each post can have multiple comments
-Post.hasMany(Like, { foreignKey: 'postId', as: 'likes' }); // Each post can have multiple likes
+Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments', onDelete: 'CASCADE' }); // Each post can have multiple comments
+Post.hasMany(Like, { foreignKey: 'postId', as: 'likes', onDelete: 'CASCADE' }); // Each post can have multiple likes
 
 // Category relationships
 Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' }); // Many-to-Many between Category and Post
 
 // Comment relationships
-Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each comment belongs to a post
-Comment.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each comment belongs to a user (author)
-Comment.hasMany(Like, { foreignKey: 'commentId', as: 'likes' });
+Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post', onDelete: 'CASCADE' }); // Each comment belongs to a post
+Comment.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' }); // Each comment belongs to a user (author)
+Comment.hasMany(Like, { foreignKey: 'commentId', as: 'likes', onDelete: 'CASCADE' });
 
 
 // Like relationships
-Like.belongsTo(Post, { foreignKey: 'postId', as: 'post' }); // Each like belongs to a post
-Like.belongsTo(User, { foreignKey: 'userId', as: 'user' }); // Each like belongs to a user (author)
-Like.belongsTo(Comment, { foreignKey: 'commentId', as: 'comment' });
+Like.belongsTo(Post, { foreignKey: 'postId', as: 'post', onDelete: 'CASCADE' }); // Each like belongs to a post
+Like.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' }); // Each like belongs to a user (author)
+Like.belongsTo(Comment, { foreignKey: 'commentId', as: 'comment', onDelete: 'CASCADE' });
 
 // Favorite relationships
-Favourite.belongsTo(User, { foreignKey: 'userId' }); // Each Favourite belongs to a user
-Favourite.belongsTo(Post, { foreignKey: 'postId' }); // Each Favourite belongs to a post
+Favourite.belongsTo(User, { foreignKey: 'userId', onDelete: 'CASCADE' }); // Each Favourite belongs to a user
+Favourite.belongsTo(Post, { foreignKey: 'postId', onDelete: 'CASCADE' }); // Each Favourite belongs to a post
 
 // Sync database and tables
 (async () => {

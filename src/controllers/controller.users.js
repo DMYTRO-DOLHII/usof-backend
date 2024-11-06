@@ -1,4 +1,5 @@
 const UserModel = require('../models/model.user');
+const logger = require('../utils/logger');
 
 exports.getAllUsers = async (req, res) => {
     const { page, limit, order = 'rating' } = req.query;
@@ -123,6 +124,7 @@ exports.deleteUser = async (req, res) => {
         await UserModel.deleteUser(user_id);
         return res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
+        logger.error(error.message);
         return res.status(500).json({ message: 'Error deleting user' });
     }
 };

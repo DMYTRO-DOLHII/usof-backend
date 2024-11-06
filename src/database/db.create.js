@@ -76,7 +76,6 @@ const createUserAndDatabase = async () => {
             GRANT ALL ON SEQUENCES TO "${process.env.DB_USER}";
         `);
         logger.info(`Default privileges on tables and sequences granted to "${process.env.DB_USER}".`);
-
     } catch (error) {
         logger.error('Error creating user and database:', error);
     } finally {

@@ -14,12 +14,20 @@ const deleteUserAndDatabase = async () => {
         await sequelize.authenticate();
         logger.info('Connection to default database established successfully.');
 
+        // Terminate any active connections to the target database
+        await sequelize.query(`
+            SELECT pg_terminate_backend(pid)
+            FROM pg_stat_activity
+            WHERE datname = '${process.env.DB_NAME}' AND pid <> pg_backend_pid();
+        `);
+        logger.info(`Terminated active connections to database "${process.env.DB_NAME}".`);
+
         // Check if the database exists before attempting to drop it
         const dbExists = await sequelize.query(`
             SELECT 1 FROM pg_database WHERE datname = '${process.env.DB_NAME}';
         `);
         if (dbExists[0].length > 0) {
-            // If the database exists, drop it
+            // Drop the database if it exists
             await sequelize.query(`
                 DROP DATABASE IF EXISTS "${process.env.DB_NAME}";
             `);
@@ -33,10 +41,10 @@ const deleteUserAndDatabase = async () => {
             SELECT 1 FROM pg_roles WHERE rolname = '${process.env.DB_USER}';
         `);
         if (userExists[0].length > 0) {
-            // Check if the user owns any objects in the database before dropping it
+            // Check if the user owns any objects in the database before dropping
             const dependentObjects = await sequelize.query(`
                 SELECT COUNT(*) FROM pg_class
-                WHERE relowner = (SELECT usesysid FROM pg_user WHERE usename = '${process.env.DB_USER}');
+                WHERE relowner = (SELECT oid FROM pg_roles WHERE rolname = '${process.env.DB_USER}');
             `);
 
             if (dependentObjects[0][0].count === '0') {
