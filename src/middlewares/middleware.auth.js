@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 const UserModel = require('../models/model.user');
 const PostModel = require('../models/model.post');
+const CommentModel = require('../models/model.comment');
 const { SECRET_KEY } = process.env;
 
 const validateToken = (req, res, next) => {
@@ -29,25 +30,60 @@ const validateToken = (req, res, next) => {
 const isAdmin = async (req, res, next) => {
     const user = await UserModel.findById(req.user.id);
     if (user.role !== 'admin') {
-        return res.status(403).json({ message: 'Admin access required' });w
+        return res.status(403).json({ message: 'Admin access required' }); w
     }
     next();
 };
 
 // Middleware to ensure the user is the post creator
 const authorizePostCreator = async (req, res, next) => {
-    const { post_id } = req.params;
     try {
-        const post = await PostModel.findById(post_id);
-        console.log(post);
-        if (post.userId !== req.user.id) {
-            return res.status(403).json({ message: 'You are not authorized to modify this post' });
+        const { post_id } = req.params;
+        const userId = req.user.id; // Assuming req.user is set by the validateToken middleware
+        const userRole = req.user.role; // Assuming req.user.role contains the user's role
+
+        // Fetch the post to check its creator
+        const post = await PostModel.findById(post_id)
+
+        if (!post) {
+            return res.status(404).json({ message: 'Post not found' });
         }
-        next();
+
+        // Check if the user is the post creator or an admin
+        if (post.userId === userId || userRole === 'admin') {
+            return next();
+        } else {
+            return res.status(403).json({ message: 'Not authorized to perform this action' });
+        }
     } catch (error) {
-        return res.status(500).json({ message: 'Server error. Please try again later.' });
+        logger.error(`Authorization error: ${error.message}`);
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
+const authorizeCommentCreator = async (req, res, next) => {
+    try {
+        const { comment_id } = req.params;
+        const userId = req.user.id; // Assuming req.user is set by the validateToken middleware
+        const userRole = req.user.role; // Assuming req.user.role contains the user's role
 
-module.exports = { validateToken, isAdmin, authorizePostCreator };
+        // Fetch the post to check its creator
+        const comment = await CommentModel.findById(comment_id);
+
+        if (!comment) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        // Check if the user is the post creator or an admin
+        if (comment.userId === userId || userRole === 'admin') {
+            return next();
+        } else {
+            return res.status(403).json({ message: 'Not authorized to perform this action' });
+        }
+    } catch (error) {
+        logger.error(`Authorization error: ${error.message}`);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+module.exports = { validateToken, isAdmin, authorizePostCreator, authorizeCommentCreator };

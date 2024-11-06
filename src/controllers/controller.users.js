@@ -55,7 +55,7 @@ exports.createUser = async (req, res) => {
     }
 
     try {
-        const user = await UserModel.findUser({ login, email });
+        const user = await UserModel.findUserByLoginOrEmail({ login: login, email: email });
         if (user) {
             return res.status(400).json({ message: 'Error: User already exists.' });
         }
@@ -64,6 +64,7 @@ exports.createUser = async (req, res) => {
 
         return res.status(201).json({ message: 'User created successfully', newUser });
     } catch (error) {
+        logger.info(error.message);
         return res.status(500).json({ message: 'Error creating user' });
     }
 };

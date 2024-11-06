@@ -4,9 +4,9 @@ const Post = require('../models/model.post');
 
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await CategoryModel.findAllCategories();
+        const categories = await CategoryModel.getAllCategories();
 
-        if (!categories || categories.length === 0) {
+        if (!categories) {
             return res.status(404).json({ message: 'No categories found' });
         }
 

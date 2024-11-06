@@ -43,10 +43,10 @@ class UserModel {
         }
     }
 
-    static async findUser({ login, email }) {
+    static async findUserByLoginOrEmail({ login, email }) {
         try {
             return await User.findOne({
-                where: { [Op.or]: [{ login }, { email }] }
+                where: { [Op.or]: [{ login: login }, { email: email }] }
             });
         } catch (error) {
             logger.error(error);
@@ -78,7 +78,8 @@ class UserModel {
                 email,
                 fullName,
                 role: role,
-                emailConfirmed: true
+                emailConfirmed: true,
+                profilePicture: 'uploads/default.png'
             });
         } catch (error) {
             logger.error(`Error creating user.`);

@@ -12,7 +12,7 @@ class CategoryModel {
         }
     }
 
-    static async findAllCategories() {
+    static async getAllCategories() {
         try {
             return await Category.findAll();
         } catch (error) {
@@ -21,7 +21,7 @@ class CategoryModel {
         }
     }
 
-    static async findAllCategories(titles) {
+    static async getAllCategories(titles) {
         try {
             return await Category.findAll({
                 where: {

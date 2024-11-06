@@ -1,6 +1,7 @@
 const { compareSync } = require('bcrypt');
 const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
+const UserModel = require('../models/model.user');
 
 exports.getCommentById = async (req, res) => {
     const { comment_id } = req.params;
@@ -37,7 +38,7 @@ exports.createLike = async (req, res) => {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        const user = await UserModel.findById(post.userId);
+        const user = await UserModel.findById(comment.userId);
 
         const existingLike = await LikeModel.findByCommentUserId({ userId: userId, commentId: comment_id });
         if (existingLike) {

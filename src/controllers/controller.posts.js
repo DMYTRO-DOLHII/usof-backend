@@ -125,7 +125,7 @@ exports.createPost = async (req, res) => {
         const newPost = await PostModel.create({ title, content, userId: req.user.id });
 
         if (categories && categories.length > 0) {
-            const categoriesObjects = await CategoryModel.findAllCategories(categories);
+            const categoriesObjects = await CategoryModel.getAllCategories(categories);
             await newPost.setCategories(categoriesObjects);
         }
 
@@ -230,6 +230,7 @@ exports.updatePost = async (req, res) => {
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
+
         post.title = title || post.title;
         post.content = content || post.content;
         post.status = status || post.status;
@@ -237,7 +238,7 @@ exports.updatePost = async (req, res) => {
         await post.save();
 
         if (categories && categories.length > 0) {
-            const updatedCategories = await CategoryModel.findAllCategories(categories);
+            const updatedCategories = await CategoryModel.getAllCategories(categories);
             await post.setCategories(updatedCategories);
         }
 

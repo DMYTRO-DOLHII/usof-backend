@@ -2,7 +2,7 @@ const { faker } = require('@faker-js/faker');
 const { User, Post, Category, Comment, Like, Favourite } = require('./db.model.db');
 const bcrypt = require('bcryptjs/dist/bcrypt');
 
-const MIN_ROWS = 5;
+const MIN_ROWS = 20;
 
 async function seedDatabase() {
     try {
@@ -60,7 +60,7 @@ async function seedDatabase() {
         }
 
         const posts = [];
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 500; i++) {
             const post = await Post.create({
                 title: faker.lorem.sentence(),
                 status: faker.helpers.arrayElement(['active', 'inactive']),
@@ -77,16 +77,17 @@ async function seedDatabase() {
         }
 
         const comments = [];
-        for (let i = 0; i < MIN_ROWS; i++) {
+        for (let i = 0; i < 120; i++) {
             const comment = await Comment.create({
                 content: faker.lorem.sentence(),
+                status: faker.helpers.arrayElement(['active', 'inactive']),
                 postId: posts[Math.floor(Math.random() * posts.length)].id,
                 userId: users[Math.floor(Math.random() * users.length)].id,
             });
             comments.push(comment);
         }
 
-        for (let i = 0; i < MIN_ROWS; i++) {
+        for (let i = 0; i < 100; i++) {
             const like = await Like.create({
                 type: faker.helpers.arrayElement(['like', 'dislike']),
                 postId: posts[Math.floor(Math.random() * posts.length)].id,
@@ -95,7 +96,7 @@ async function seedDatabase() {
             });
         }
 
-        for (let i = 0; i < MIN_ROWS; i++) {
+        for (let i = 0; i < 50; i++) {
             await Favourite.create({
                 userId: users[Math.floor(Math.random() * users.length)].id,
                 postId: posts[Math.floor(Math.random() * posts.length)].id,
