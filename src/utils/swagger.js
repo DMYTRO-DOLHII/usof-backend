@@ -2,10 +2,10 @@ const swaggerAutogen = require('swagger-autogen')();
 
 const doc = {
     info: {
-        title: 'My API',
+        title: 'My API for McOk',
         description: 'Description'
     },
-    host: 'localhost:3000'
+    host: 'localhost:8080'
 };
 
 const outputFile = '../../swagger-output.json';
