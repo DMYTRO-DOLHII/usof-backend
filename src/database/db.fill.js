@@ -2,8 +2,6 @@ const { faker } = require('@faker-js/faker');
 const { User, Post, Category, Comment, Like, Favourite } = require('./db.model.db');
 const bcrypt = require('bcryptjs/dist/bcrypt');
 
-const MIN_ROWS = 20;
-
 async function seedDatabase() {
     try {
         // Create users
@@ -29,7 +27,7 @@ async function seedDatabase() {
         users.push(admin);
 
         // Create and store additional users
-        for (let i = 0; i < MIN_ROWS; i++) {
+        for (let i = 0; i < 120; i++) {
             const userData = {
                 login: faker.internet.userName(),
                 password: faker.internet.password(),
@@ -52,7 +50,7 @@ async function seedDatabase() {
         }
 
         const categories = [];
-        for (let i = 0; i < MIN_ROWS; i++) {
+        for (let i = 0; i < 30; i++) {
             const category = await Category.create({
                 title: faker.commerce.department(),
                 description: faker.lorem.sentence(),
@@ -61,7 +59,7 @@ async function seedDatabase() {
         }
 
         const posts = [];
-        for (let i = 0; i < 500; i++) {
+        for (let i = 0; i < 300; i++) {
             const post = await Post.create({
                 title: faker.lorem.sentence(),
                 status: faker.helpers.arrayElement(['active', 'inactive']),
@@ -71,14 +69,14 @@ async function seedDatabase() {
 
             const randomCategories = categories
                 .sort(() => 0.5 - Math.random())
-                .slice(0, getRandomInt(1, 3));
+                .slice(0, getRandomInt(1, 5));
             await post.addCategories(randomCategories);
 
             posts.push(post);
         }
 
         const comments = [];
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < 12000; i++) {
             const comment = await Comment.create({
                 content: faker.lorem.sentence(),
                 status: faker.helpers.arrayElement(['active', 'inactive']),
@@ -88,7 +86,7 @@ async function seedDatabase() {
             comments.push(comment);
         }
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 3000; i++) {
             const like = await Like.create({
                 type: faker.helpers.arrayElement(['like', 'dislike']),
                 postId: posts[Math.floor(Math.random() * posts.length)].id,

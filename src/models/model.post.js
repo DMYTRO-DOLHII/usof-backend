@@ -1,4 +1,4 @@
-const { Post, Category, Comment } = require('../database/db.model.db');
+const { Post, Category, Comment, Like } = require('../database/db.model.db');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
 
@@ -26,19 +26,6 @@ class PostModel {
         }
     }
 
-    // static async findAllAndCount({ limit, offset }) {
-    //     try {
-    //         return await Post.findAndCountAll({
-    //             limit,
-    //             offset,
-    //             order: [['publishDate', 'DESC']],
-    //         });
-    //     } catch (error) {
-    //         logger.error(`Fetching posts error: ${error.message}`);
-    //         throw error;
-    //     }
-    // }
-
     static async findAllAndCount({ limit, offset }) {
         try {
             return await Post.findAndCountAll({
@@ -55,6 +42,7 @@ class PostModel {
                 ],
                 attributes: {
                     include: [
+                        // Count total comments
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -62,6 +50,24 @@ class PostModel {
                                 WHERE "comments"."postId" = "Post"."id"
                             )`),
                             "commentsCount"
+                        ],
+                        // Count likes
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Likes" AS "likes"
+                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                            )`),
+                            "likes"
+                        ],
+                        // Count dislikes
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Likes" AS "likes"
+                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                            )`),
+                            "dislikes"
                         ]
                     ]
                 },
@@ -81,8 +87,8 @@ class PostModel {
                 order: [['publishDate', 'DESC']],
                 where: {
                     [Op.or]: [
-                        { title: { [Op.like]: `${search}%` } },
-                        { content: { [Op.like]: `${search}%` } }
+                        { title: { [Op.like]: `%${search}%` } },
+                        { content: { [Op.like]: `%${search}%` } }
                     ]
                 },
                 include: [
@@ -91,8 +97,39 @@ class PostModel {
                         as: 'categories',
                         attributes: ['id', 'title'],
                         through: { attributes: [] }
-                    }
+                    },
                 ],
+                attributes: {
+                    include: [
+                        // Count total comments
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Comments" AS "comments"
+                                WHERE "comments"."postId" = "Post"."id"
+                            )`),
+                            "commentsCount"
+                        ],
+                        // Count likes
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Likes" AS "likes"
+                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                            )`),
+                            "likes"
+                        ],
+                        // Count dislikes
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Likes" AS "likes"
+                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                            )`),
+                            "dislikes"
+                        ]
+                    ]
+                },
                 distinct: true
             });
         } catch (error) {
@@ -103,12 +140,23 @@ class PostModel {
 
     static async findById(postId) {
         try {
-            return await Post.findOne({ where: { id: postId } });
+            return await Post.findOne({
+                where: { id: postId },
+                include: [
+                    {
+                        model: Comment,
+                        as: 'comments',
+                        where: { postId: postId },
+                        required: false,
+                    }
+                ]
+            });
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
             throw error;
         }
     }
+
 
     // static async findByCategoryId(categoryId, { limit, offset }) {
     //     try {

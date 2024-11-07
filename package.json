@@ -10,7 +10,8 @@
         "db:create": "node src/database/db.create.js && node src/database/db.model.db.js",
         "db:fill": "node src/database/db.fill.js",
         "db:drop": "node src/database/db.drop.js",
-        "swagger": "node ./src/utils/swagger.js"
+        "swagger": "node ./src/utils/swagger.js",
+        "app:restart": "npm run db:drop && npm run db:create && npm run db:fill && npm run dev"
     },
     "repository": {
         "type": "git",

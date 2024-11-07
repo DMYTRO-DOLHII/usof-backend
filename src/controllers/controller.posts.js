@@ -4,6 +4,7 @@ const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
 const UserModel = require('../models/model.user');
 const { Post } = require('../database/db.model.db');
+const logger = require('../utils/logger');
 
 // exports.getAllPosts = async (req, res) => {
 //     const page = parseInt(req.query.page) || 1;
@@ -19,24 +20,19 @@ const { Post } = require('../database/db.model.db');
 // };
 
 exports.getAllPosts = async (req, res) => {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 30;
-    const offset = (page - 1) * limit;
+    const { limit, offset, search } = req.query;
 
     try {
-        const { count, rows: posts } = await PostModel.findAllAndCount({ limit, offset });
-
-        const totalPages = Math.ceil(count / limit);
+        const { count, rows: posts } = await PostModel.findAllBySearchAndCount({ limit: limit || 30, offset: offset, search: search || '' });
 
         return res.status(200).json({
             posts,
             pagination: {
                 totalItems: count,
-                currentPage: page,
-                totalPages,
             },
         });
     } catch (error) {
+        logger.error(error.message);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
