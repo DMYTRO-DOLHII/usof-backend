@@ -1,5 +1,5 @@
-const { Post, Category } = require('../database/db.model.db');
-const { Op } = require('sequelize');
+const { Post, Category, Comment } = require('../database/db.model.db');
+const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
 
 class PostModel {
@@ -53,6 +53,18 @@ class PostModel {
                         through: { attributes: [] }
                     }
                 ],
+                attributes: {
+                    include: [
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Comments" AS "comments"
+                                WHERE "comments"."postId" = "Post"."id"
+                            )`),
+                            "commentsCount"
+                        ]
+                    ]
+                },
                 distinct: true
             });
         } catch (error) {
