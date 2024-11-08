@@ -42,7 +42,6 @@ class PostModel {
                 ],
                 attributes: {
                     include: [
-                        // Count total comments
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -51,7 +50,6 @@ class PostModel {
                             )`),
                             "commentsCount"
                         ],
-                        // Count likes
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -60,7 +58,6 @@ class PostModel {
                             )`),
                             "likes"
                         ],
-                        // Count dislikes
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -101,7 +98,6 @@ class PostModel {
                 ],
                 attributes: {
                     include: [
-                        // Count total comments
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -110,7 +106,6 @@ class PostModel {
                             )`),
                             "commentsCount"
                         ],
-                        // Count likes
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -119,7 +114,6 @@ class PostModel {
                             )`),
                             "likes"
                         ],
-                        // Count dislikes
                         [
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
@@ -158,24 +152,7 @@ class PostModel {
     }
 
 
-    // static async findByCategoryId(categoryId, { limit, offset }) {
-    //     try {
-    //         const posts = await Post.findAndCountAll({
-    //             where: { categoryId: categoryId },
-    //             include: [{ model: Category, as: 'categories' }], // Include the Post model to get post data
-    //             limit: limit,
-    //             offset: offset
-    //         });
 
-    //         return {
-    //             totalPosts: posts.count,
-    //             posts: posts.rows
-    //         };
-    //     } catch (error) {
-    //         logger.error(`Fetching posts by category error: ${error.message}`);
-    //         throw error;
-    //     }
-    // }
 
     static async findWithCategories(postId) {
         try {

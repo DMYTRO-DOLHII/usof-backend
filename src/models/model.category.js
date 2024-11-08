@@ -58,30 +58,33 @@ class CategoryModel {
 
     static async findPostsByCategoryId(categoryId, { limit, offset }) {
         try {
-            const categoryWithPosts = await Category.findByPk(categoryId, {
-                include: {
-                    model: Post,
-                    as: 'posts', // This should match the alias used in your association
-                },
-                limit: limit,
-                offset: offset
+            const { count, rows: posts } = await Post.findAndCountAll({
+                limit,
+                offset,
+                include: [
+                    {
+                        model: Category,
+                        as: 'categories',
+                        through: { attributes: [] },
+                        where: { id: categoryId }
+                    }
+                ],
+                distinct: true, // Ensure accurate count for pagination
+                order: [['publishDate', 'DESC']] // Optional: Order by publish date
             });
 
-            if (!categoryWithPosts) {
-                logger.warn("Category could not be found!");
-                return { totalPosts: 0, posts: [] };
-            }
-
             return {
-                totalPosts: categoryWithPosts.posts.length,
-                posts: categoryWithPosts.posts
+                totalPosts: count,
+                posts: posts.map(post => ({
+                    ...post.toJSON(),
+                    categories: post.categories
+                }))
             };
         } catch (error) {
             logger.error(`Fetching posts by category error: ${error.message}`);
             throw error;
         }
     }
-
 
     static async findById(categoryId) {
         try {

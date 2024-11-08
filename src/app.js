@@ -18,7 +18,7 @@ const favouriteRouter = require('./routes/route.favourite');
 
 app.use(express.json());
 
-app.use(cors({ origin: process.env.FRONT_URL }));
+app.use(cors({ origin: process.env.FRONT_URL, credentials: true }));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
