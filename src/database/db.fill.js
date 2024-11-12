@@ -17,6 +17,16 @@ async function seedDatabase() {
             profilePicture: 'uploads/admin.png'
         };
 
+        const defaultUser = {
+            login: 'iuudda',
+            password: 'iuudda',
+            fullName: 'Mr. Iuudda',
+            email: 'iuudda@gmail.com',
+            emailConfirmed: true,
+            role: 'user',
+            profilePicture: 'uploads/default.png'
+        }
+
         const hashedAdminPassword = await bcrypt.hash(adminData.password, 10);
         adminData.password = hashedAdminPassword;
 

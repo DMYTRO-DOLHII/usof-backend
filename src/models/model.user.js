@@ -8,12 +8,18 @@ class UserModel {
         return await User.findAll();
     }
 
-    static async findAllAndCount({ limit, offset, order }) {
+    static async findAllAndCount({ limit, offset, search, order }) {
         try {
             return await User.findAndCountAll({
                 limit,
                 offset,
                 order: [[order, 'DESC']],
+                where: {
+                    [Op.or]: [
+                        { login: { [Op.like]: `%${search}%` } },
+                        { fullName: { [Op.like]: `%${search}%` } }
+                    ]
+                },
             });
         } catch (error) {
             logger.error(`Fetching users error: ${error.message}`);

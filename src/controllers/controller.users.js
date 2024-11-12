@@ -2,24 +2,19 @@ const UserModel = require('../models/model.user');
 const logger = require('../utils/logger');
 
 exports.getAllUsers = async (req, res) => {
-    const { page, limit, order = 'rating' } = req.query;
+    const { limit = 30, offset = 0, search = '', order = 'rating' } = req.query;
 
     try {
-        if (page && limit) {
-            const pageNumber = parseInt(page) || 1;
-            const limitNumber = parseInt(limit) || 30;
-            const offset = (pageNumber - 1) * limitNumber;
+        if (limit && offset) {
 
-            const { count, rows: users } = await UserModel.findAllAndCount({ limit, offset, order });
-
-            const totalPages = Math.ceil(count / limit);
+            const { count, rows: users } = await UserModel.findAllAndCount({
+                limit: limit, offset: offset, search: search, order: order 
+            });
 
             return res.status(200).json({
                 users,
                 pagination: {
-                    totalUsers: count,
-                    currentPage: page,
-                    totalPages,
+                    totalUsers: count
                 },
             });
         } else {
