@@ -6,18 +6,7 @@ const UserModel = require('../models/model.user');
 const { Post } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
-// exports.getAllPosts = async (req, res) => {
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 10;
-//     const offset = (page - 1) * limit;
 
-//     try {
-//         const posts = await PostModel.findAll({ limit, offset });
-//         return res.status(200).json({ posts });
-//     } catch (error) {
-//         return res.status(500).json({ message: 'Server error. Please try again later.' });
-//     }
-// };
 
 exports.getAllPosts = async (req, res) => {
     const { limit, offset, search } = req.query;
@@ -76,8 +65,10 @@ exports.getPostById = async (req, res) => {
 
 exports.getPostComments = async (req, res) => {
     const { post_id } = req.params;
+    const { sort } = req.query;
+
     try {
-        const comments = await CommentModel.findAllByPost(post_id);
+        const comments = await CommentModel.findAllByPost(post_id, sort);
         return res.status(200).json(comments);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
@@ -93,13 +84,7 @@ exports.getPostCategories = async (req, res) => {
         }
 
         res.status(200).json(post.categories);
-        // const post = await PostModel.findById(post_id);
-        // if (!post) {
-        //     return res.status(404).json({ message: "Post not found" });
-        // }
 
-        // const categories = await CategoryModel.findAllByPostId(post_id)
-        // return res.status(200).json(categories);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }

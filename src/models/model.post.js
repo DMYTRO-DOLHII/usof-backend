@@ -134,25 +134,17 @@ class PostModel {
 
     static async findById(postId) {
         try {
-            return await Post.findOne({
-                where: { id: postId },
-                include: [
-                    {
-                        model: Comment,
-                        as: 'comments',
-                        where: { postId: postId },
-                        required: false,
-                    }
-                ]
+            return await Post.findByPk(postId, {
+                include: [{
+                    model: Like,
+                    as: 'likes',
+                }]
             });
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
             throw error;
         }
     }
-
-
-
 
     static async findWithCategories(postId) {
         try {

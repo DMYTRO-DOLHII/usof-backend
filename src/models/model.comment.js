@@ -1,4 +1,4 @@
-const { Comment } = require('../database/db.model.db');
+const { Comment, Like } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 class CommentModel {
@@ -17,9 +17,17 @@ class CommentModel {
 
     static async findAllByPost(postId) {
         try {
-            return await Comment.findAll({ where: { postId } });
+            return await Comment.findAll({
+                where: { postId },
+                include: [
+                    {
+                        model: Like,
+                        as: 'likes'
+                    }
+                ]
+            });
         } catch (error) {
-            logger.error(`Fetching comments error: ${error.message}`);
+            logger.error(`Fetching comments with likes error: ${error.message}`);
             throw error;
         }
     }
