@@ -4,11 +4,12 @@ const Post = require('../models/model.post');
 
 exports.getAllCategories = async (req, res) => {
     try {
-        const categories = await CategoryModel.getAllCategories();
-
-        if (!categories) {
-            return res.status(404).json({ message: 'No categories found' });
-        }
+        const { search = '' } = req.query;
+        const categories = await CategoryModel.findAllCategoriesBySearch(search);
+        
+        // if (!categories) {
+        //     return res.status(404).json({ message: 'No categories found' });
+        // }
 
         return res.status(200).json(categories);
     } catch (error) {
@@ -24,7 +25,7 @@ exports.getCategoryById = async (req, res) => {
         if (!category) {
             return res.status(404).json({ message: 'Category not found' });
         }
-        
+
         return res.status(200).json(category);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });

@@ -12,9 +12,16 @@ class CategoryModel {
         }
     }
 
-    static async getAllCategories() {
+    static async findAllCategoriesBySearch(search) {
         try {
-            return await Category.findAll();
+            return await Category.findAll({
+                where: {
+                    [Op.or]: [
+                        { title: { [Op.like]: `%${search}%` } },
+                        { description: { [Op.like]: `%${search}%` } }
+                    ]
+                },
+            });
         } catch (error) {
             logger.error(`Fetching categories error: ${error.message}`);
             throw error;
