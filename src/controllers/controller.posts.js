@@ -13,7 +13,6 @@ exports.getAllPosts = async (req, res) => {
 
     try {
         const { count, rows: posts } = await PostModel.findAllBySearchAndCount({ limit: limit || 30, offset: offset, search: search || '' });
-
         return res.status(200).json({
             posts,
             pagination: {

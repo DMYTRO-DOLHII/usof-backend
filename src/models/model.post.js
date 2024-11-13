@@ -1,4 +1,4 @@
-const { Post, Category, Comment, Like } = require('../database/db.model.db');
+const { Post, Category, Comment, Like, User } = require('../database/db.model.db');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
 
@@ -76,61 +76,68 @@ class PostModel {
         }
     }
 
-    static async findAllBySearchAndCount({ limit, offset, search }) {
-        try {
-            return await Post.findAndCountAll({
-                limit,
-                offset,
-                order: [['publishDate', 'DESC']],
-                where: {
-                    [Op.or]: [
-                        { title: { [Op.like]: `%${search}%` } },
-                        { content: { [Op.like]: `%${search}%` } }
-                    ]
+
+static async findAllBySearchAndCount({ limit, offset, search }) {
+    try {
+        return await Post.findAndCountAll({
+            limit,
+            offset,
+            order: [['publishDate', 'DESC']],
+            where: {
+                [Op.or]: [
+                    { title: { [Op.like]: `%${search}%` } },
+                    { content: { [Op.like]: `%${search}%` } }
+                ]
+            },
+            include: [
+                {
+                    model: Category,
+                    as: 'categories',
+                    attributes: ['id', 'title'],
+                    through: { attributes: [] }
                 },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'login', 'profilePicture']
+                }
+            ],
+            attributes: {
                 include: [
-                    {
-                        model: Category,
-                        as: 'categories',
-                        attributes: ['id', 'title'],
-                        through: { attributes: [] }
-                    },
-                ],
-                attributes: {
-                    include: [
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Comments" AS "comments"
-                                WHERE "comments"."postId" = "Post"."id"
-                            )`),
-                            "commentsCount"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
-                            )`),
-                            "likes"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
-                            )`),
-                            "dislikes"
-                        ]
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "Comments" AS "comments"
+                            WHERE "comments"."postId" = "Post"."id"
+                        )`),
+                        "commentsCount"
+                    ],
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "Likes" AS "likes"
+                            WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                        )`),
+                        "likes"
+                    ],
+                    [
+                        Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "Likes" AS "likes"
+                            WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                        )`),
+                        "dislikes"
                     ]
-                },
-                distinct: true
-            });
-        } catch (error) {
-            logger.error(`Fetching posts error: ${error.message}`);
-            throw error;
-        }
+                ]
+            },
+            distinct: true
+        });
+    } catch (error) {
+        logger.error(`Fetching posts error: ${error.message}`);
+        throw error;
     }
+}
+
 
     static async findById(postId) {
         try {
