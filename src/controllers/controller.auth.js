@@ -8,6 +8,7 @@ const crypto = require('crypto');
 const { doesNotMatch } = require('assert');
 const logger = require('../utils/logger');
 const { User } = require('../database/db.model.db');
+const { ExceptionHandler } = require('winston');
 
 exports.registerUser = async (req, res) => {
     const { login, email, fullName, password } = req.body;
@@ -83,6 +84,33 @@ exports.loginUser = async (req, res) => {
         res.status(200).json({ message: 'Login successful', token: token });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+};
+
+exports.refreshToken = async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+        return res.status(401).json({ message: 'No refresh token provided' });
+    }
+
+    try {
+        const decoded = jwt.decode(token);
+        if (!decoded || !decoded.id) {
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+
+        const user = await UserModel.findById(decoded.id);
+        if (!user) {
+            return res.status(403).json({ message: 'User not found' });
+        }
+
+        const newAccessToken = generateToken(user);
+
+        res.json({ token: newAccessToken });
+    } catch (error) {
+        console.error('Error generating new access token:', error);
+        res.status(500).json({ message: 'Server error' });
     }
 };
 
