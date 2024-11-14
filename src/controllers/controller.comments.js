@@ -71,7 +71,6 @@ exports.createLike = async (req, res) => {
 
         const like = await LikeModel.create({
             userId: userId,
-            postId: comment.postId,
             commentId: comment_id,
             type: type
         });

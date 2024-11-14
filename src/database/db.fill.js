@@ -1,6 +1,7 @@
 const { faker } = require('@faker-js/faker');
 const { User, Post, Category, Comment, Like, Favourite } = require('./db.model.db');
 const bcrypt = require('bcryptjs/dist/bcrypt');
+const { user } = require('pg/lib/defaults');
 
 async function seedDatabase() {
     try {
@@ -17,24 +18,34 @@ async function seedDatabase() {
             profilePicture: 'uploads/admin.png'
         };
 
-        const defaultUser = {
+        const iuuddaData = {
             login: 'iuudda',
             password: 'iuudda',
             fullName: 'Mr. Iuudda',
             email: 'iuudda@gmail.com',
             emailConfirmed: true,
             role: 'user',
-            profilePicture: 'uploads/default.png'
+            profilePicture: 'uploads/iuudda.jpeg'
         }
 
         const hashedAdminPassword = await bcrypt.hash(adminData.password, 10);
-        adminData.password = hashedAdminPassword;
+        const hashedIuuddaPassword = await bcrypt.hash(iuuddaData.password, 10);
 
-        const [admin, created] = await User.findOrCreate({
+        adminData.password = hashedAdminPassword;
+        iuuddaData.password = hashedIuuddaPassword;
+
+        const [admin, createdAdmin] = await User.findOrCreate({
             where: { email: adminData.email },
             defaults: adminData,
         });
+
+        const [iuudda, createdIuudda] = await User.findOrCreate({
+            where: { email: iuuddaData.email },
+            defaults: iuuddaData,
+        });
+
         users.push(admin);
+        users.push(iuudda);
 
         // Create and store additional users
         for (let i = 0; i < 120; i++) {
