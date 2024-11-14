@@ -28,11 +28,11 @@ class CategoryModel {
         }
     }
 
-    static async getAllCategories(titles) {
+    static async getAllCategories(idx) {
         try {
             return await Category.findAll({
                 where: {
-                    title: { [Op.in]: titles }
+                    id: { [Op.in]: idx }
                 }
             });
         } catch (error) {

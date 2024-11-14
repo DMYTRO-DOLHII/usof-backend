@@ -106,6 +106,7 @@ exports.createPost = async (req, res) => {
 
         if (categories && categories.length > 0) {
             const categoriesObjects = await CategoryModel.getAllCategories(categories);
+            console.log(categoriesObjects);
             await newPost.setCategories(categoriesObjects);
         }
 
