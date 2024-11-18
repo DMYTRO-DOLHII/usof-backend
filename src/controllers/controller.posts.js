@@ -6,8 +6,6 @@ const UserModel = require('../models/model.user');
 const { Post } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
-
-
 exports.getAllPosts = async (req, res) => {
     const { limit, offset, search } = req.query;
 
@@ -22,6 +20,19 @@ exports.getAllPosts = async (req, res) => {
     } catch (error) {
         logger.error(error.message);
         return res.status(500).json({ message: 'Server error. Please try again later.' });
+    }
+};
+
+exports.getUserAllPosts = async (req, res) => {
+    const { user_id } = req.params;
+
+    try {
+        const posts = await PostModel.findAll4User(user_id);
+
+        return res.status(200).json(posts);
+    } catch (error) {
+        logger.error(error.message);
+        return res.status(500).josn({ message: error.message })
     }
 };
 

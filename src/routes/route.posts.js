@@ -4,6 +4,7 @@ const postController = require('../controllers/controller.posts');
 const { validateToken, isAdmin, authorizePostCreator } = require('../middlewares/middleware.auth');
 
 router.get('/', postController.getAllPosts);
+router.get('/:user_id/posts', postController.getUserAllPosts);
 router.get('/:post_id', postController.getPostById);
 router.get('/', postController.getPostsBySearch);
 router.get('/:post_id/comments', postController.getPostComments);

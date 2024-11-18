@@ -9,6 +9,7 @@ router.post('/logout', authController.logoutUser);
 router.post('/refresh', authController.refreshToken);
 router.post('/password-reset', authController.requestPasswordReset);
 router.post('/password-reset/:confirmToken', authController.confirmPasswordReset);
+
 router.post('/confirm-email/', authController.confirmEmail);
 // confirm email route
 

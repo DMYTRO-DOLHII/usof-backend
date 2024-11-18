@@ -33,21 +33,18 @@ const isAdmin = async (req, res, next) => {
     next();
 };
 
-// Middleware to ensure the user is the post creator
 const authorizePostCreator = async (req, res, next) => {
     try {
         const { post_id } = req.params;
-        const userId = req.user.id; // Assuming req.user is set by the validateToken middleware
-        const userRole = req.user.role; // Assuming req.user.role contains the user's role
+        const userId = req.user.id;
+        const userRole = req.user.role;
 
-        // Fetch the post to check its creator
         const post = await PostModel.findById(post_id)
 
         if (!post) {
             return res.status(404).json({ message: 'Post not found' });
         }
 
-        // Check if the user is the post creator or an admin
         if (post.userId === userId || userRole === 'admin') {
             return next();
         } else {
@@ -62,17 +59,15 @@ const authorizePostCreator = async (req, res, next) => {
 const authorizeCommentCreator = async (req, res, next) => {
     try {
         const { comment_id } = req.params;
-        const userId = req.user.id; // Assuming req.user is set by the validateToken middleware
-        const userRole = req.user.role; // Assuming req.user.role contains the user's role
+        const userId = req.user.id;
+        const userRole = req.user.role;
 
-        // Fetch the post to check its creator
         const comment = await CommentModel.findById(comment_id);
 
         if (!comment) {
             return res.status(404).json({ message: 'Comment not found' });
         }
 
-        // Check if the user is the post creator or an admin
         if (comment.userId === userId || userRole === 'admin') {
             return next();
         } else {

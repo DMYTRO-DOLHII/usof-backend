@@ -26,6 +26,55 @@ class PostModel {
         }
     }
 
+    static async findAll4User(userId) {
+        try {
+            return await Post.findAndCountAll({
+                order: [['publishDate', 'DESC']],
+                where: { userId: userId },
+                include: [
+                    {
+                        model: Category,
+                        as: 'categories',
+                        attributes: ['id', 'title'],
+                        through: { attributes: [] }
+                    }
+                ],
+                attributes: {
+                    include: [
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Comments" AS "comments"
+                                WHERE "comments"."postId" = "Post"."id"
+                            )`),
+                            "commentsCount"
+                        ],
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Likes" AS "likes"
+                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                            )`),
+                            "likes"
+                        ],
+                        [
+                            Sequelize.literal(`(
+                                SELECT COUNT(*)
+                                FROM "Likes" AS "likes"
+                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                            )`),
+                            "dislikes"
+                        ]
+                    ]
+                },
+                distinct: true
+            });
+        } catch (error) {
+            logger.error(`Fetching posts error: ${error.message}`);
+            throw error;
+        }
+    }
+
     static async findAllAndCount({ limit, offset }) {
         try {
             return await Post.findAndCountAll({
@@ -148,10 +197,10 @@ class PostModel {
                         as: 'likes',
                     },
                     {
-                    model: User,
-                    as: 'user',
-                    attributes: ['id', 'login', 'profilePicture']
-                }
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'login', 'profilePicture']
+                    }
                 ]
             });
         } catch (error) {
