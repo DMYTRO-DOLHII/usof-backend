@@ -166,11 +166,13 @@ exports.createPostLike = async (req, res) => {
                     existingLike.type = type;
                     user.rating += 2;
                     await user.save();
+                    await existingLike.save();
                     return res.status(201).json({ message: "Dislike deleted, Like added" });
                 } else {
                     existingLike.type = type;
                     user.rating -= 2;
                     await user.save();
+                    await existingLike.save();
                     return res.status(201).json({ message: "Like deleted, Dislike added" });
                 }
             }
