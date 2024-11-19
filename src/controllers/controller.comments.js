@@ -45,25 +45,27 @@ exports.createLike = async (req, res) => {
             if (existingLike.type === type) {
                 if (type === 'like') {
                     await existingLike.destroy();
-                    user.rating -= 1;
-                    await user.save();
+                    // user.rating -= 1;
+                    // await user.save();
                     return res.status(201).json({ message: "Like deleted" });
                 } else {
                     await existingLike.destroy();
-                    user.rating += 1;
-                    await user.save();
+                    // user.rating += 1;
+                    // await user.save();
                     return res.status(201).json({ message: "Dislike deleted" });
                 }
             } else {
                 if (type === 'like') {
                     existingLike.type = type;
-                    user.rating += 2;
-                    await user.save();
+                    await existingLike.save()
+                    // user.rating += 2;
+                    // await user.save();
                     return res.status(201).json({ message: "Dislike deleted, Like added" });
                 } else {
                     existingLike.type = type;
-                    user.rating -= 2;
-                    await user.save();
+                    await existingLike.save();
+                    // user.rating -= 2;
+                    // await user.save();
                     return res.status(201).json({ message: "Like deleted, Dislike added" });
                 }
             }
@@ -74,11 +76,6 @@ exports.createLike = async (req, res) => {
             commentId: comment_id,
             type: type
         });
-
-        if (type === 'like') user.rating++;
-        else user.rating--;
-
-        await user.save();
 
         return res.status(201).json({ message: 'Like added successfully', like });
     } catch (error) {

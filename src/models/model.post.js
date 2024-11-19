@@ -28,7 +28,7 @@ class PostModel {
 
     static async findAll4User(userId) {
         try {
-            return await Post.findAndCountAll({
+            return await Post.findAll({
                 order: [['publishDate', 'DESC']],
                 where: { userId: userId },
                 include: [
@@ -37,6 +37,11 @@ class PostModel {
                         as: 'categories',
                         attributes: ['id', 'title'],
                         through: { attributes: [] }
+                    },
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'login', 'profilePicture']
                     }
                 ],
                 attributes: {
@@ -75,55 +80,55 @@ class PostModel {
         }
     }
 
-    static async findAllAndCount({ limit, offset }) {
-        try {
-            return await Post.findAndCountAll({
-                limit,
-                offset,
-                order: [['publishDate', 'DESC']],
-                include: [
-                    {
-                        model: Category,
-                        as: 'categories',
-                        attributes: ['id', 'title'],
-                        through: { attributes: [] }
-                    }
-                ],
-                attributes: {
-                    include: [
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Comments" AS "comments"
-                                WHERE "comments"."postId" = "Post"."id"
-                            )`),
-                            "commentsCount"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
-                            )`),
-                            "likes"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
-                            )`),
-                            "dislikes"
-                        ]
-                    ]
-                },
-                distinct: true
-            });
-        } catch (error) {
-            logger.error(`Fetching posts error: ${error.message}`);
-            throw error;
-        }
-    }
+    // static async findAllAndCount({ limit, offset }) {
+    //     try {
+    //         return await Post.findAndCountAll({
+    //             limit,
+    //             offset,
+    //             order: [['publishDate', 'DESC']],
+    //             include: [
+    //                 {
+    //                     model: Category,
+    //                     as: 'categories',
+    //                     attributes: ['id', 'title'],
+    //                     through: { attributes: [] }
+    //                 }
+    //             ],
+    //             attributes: {
+    //                 include: [
+    //                     [
+    //                         Sequelize.literal(`(
+    //                             SELECT COUNT(*)
+    //                             FROM "Comments" AS "comments"
+    //                             WHERE "comments"."postId" = "Post"."id"
+    //                         )`),
+    //                         "commentsCount"
+    //                     ],
+    //                     [
+    //                         Sequelize.literal(`(
+    //                             SELECT COUNT(*)
+    //                             FROM "Likes" AS "likes"
+    //                             WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+    //                         )`),
+    //                         "likes"
+    //                     ],
+    //                     [
+    //                         Sequelize.literal(`(
+    //                             SELECT COUNT(*)
+    //                             FROM "Likes" AS "likes"
+    //                             WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+    //                         )`),
+    //                         "dislikes"
+    //                     ]
+    //                 ]
+    //             },
+    //             distinct: true
+    //         });
+    //     } catch (error) {
+    //         logger.error(`Fetching posts error: ${error.message}`);
+    //         throw error;
+    //     }
+    // }
 
 
     static async findAllBySearchAndCount({ limit, offset, search }) {
