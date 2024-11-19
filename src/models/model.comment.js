@@ -2,12 +2,13 @@ const { Comment, Like } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 class CommentModel {
-    static async create({ content, userId, postId }) {
+    static async create({ content, userId, postId, parentCommentId = null }) {
         try {
             return await Comment.create({
                 content,
                 userId,
-                postId
+                postId,
+                parentCommentId
             });
         } catch (error) {
             logger.error(`Comment creation error: ${error.message}`);

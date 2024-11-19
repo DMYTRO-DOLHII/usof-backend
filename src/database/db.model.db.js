@@ -97,6 +97,10 @@ const Comment = sequelize.define('Comment', {
         type: DataTypes.ENUM('active', 'inactive'),
         defaultValue: 'active',
     },
+    parentCommentId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+    },
 }, {
     timestamps: false,
 });
@@ -141,6 +145,9 @@ Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' }); // Man
 Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post', onDelete: 'CASCADE' }); // Each comment belongs to a post
 Comment.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' }); // Each comment belongs to a user (author)
 Comment.hasMany(Like, { foreignKey: 'commentId', as: 'likes', onDelete: 'CASCADE' });
+Comment.belongsTo(Comment, { foreignKey: 'parentCommentId', as: 'parentComment', onDelete: 'CASCADE', }); // A comment can belong to a parent comment
+Comment.hasMany(Comment, { foreignKey: 'parentCommentId', as: 'replies', onDelete: 'CASCADE' }); // A comment can have multiple replies
+
 
 
 // Like relationships
