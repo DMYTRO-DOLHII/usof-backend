@@ -1,4 +1,4 @@
-const { Comment, Like } = require('../database/db.model.db');
+const { User, Comment, Reply, Like } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 class CommentModel {
@@ -23,15 +23,32 @@ class CommentModel {
                 include: [
                     {
                         model: Like,
-                        as: 'likes'
-                    }
-                ]
+                        as: 'likes',
+                    },
+                    {
+                        model: Reply,
+                        as: 'replies',
+                        include: [
+                            {
+                                model: User,
+                                as: 'user',
+                                attributes: ['id', 'login', 'profilePicture'],
+                            },
+                        ],
+                    },
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'login', 'profilePicture'],
+                    },
+                ],
             });
         } catch (error) {
-            logger.error(`Fetching comments with likes error: ${error.message}`);
+            logger.error(`Fetching comments with replies error: ${error.message}`);
             throw error;
         }
     }
+
 
     static async findById(commentId) {
         try {

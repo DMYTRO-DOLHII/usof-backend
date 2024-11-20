@@ -1,7 +1,7 @@
 const { faker } = require('@faker-js/faker');
-const { User, Post, Category, Comment, Like, Favourite } = require('./db.model.db');
-const bcrypt = require('bcryptjs/dist/bcrypt');
-const { user } = require('pg/lib/defaults');
+const { User, Post, Category, Comment, Like, Favourite, Reply } = require('./db.model.db');
+const bcrypt = require('bcryptjs');
+const logger = require('../utils/logger');
 
 async function seedDatabase() {
     try {
@@ -15,7 +15,7 @@ async function seedDatabase() {
             email: 'admin@example.com',
             emailConfirmed: true,
             role: 'admin',
-            profilePicture: 'uploads/admin.png'
+            profilePicture: 'uploads/admin.png',
         };
 
         const iuuddaData = {
@@ -25,8 +25,8 @@ async function seedDatabase() {
             email: 'iuudda@gmail.com',
             emailConfirmed: true,
             role: 'user',
-            profilePicture: 'uploads/iuudda.jpeg'
-        }
+            profilePicture: 'uploads/iuudda.jpeg',
+        };
 
         const hashedAdminPassword = await bcrypt.hash(adminData.password, 10);
         const hashedIuuddaPassword = await bcrypt.hash(iuuddaData.password, 10);
@@ -34,12 +34,12 @@ async function seedDatabase() {
         adminData.password = hashedAdminPassword;
         iuuddaData.password = hashedIuuddaPassword;
 
-        const [admin, createdAdmin] = await User.findOrCreate({
+        const [admin] = await User.findOrCreate({
             where: { email: adminData.email },
             defaults: adminData,
         });
 
-        const [iuudda, createdIuudda] = await User.findOrCreate({
+        const [iuudda] = await User.findOrCreate({
             where: { email: iuuddaData.email },
             defaults: iuuddaData,
         });
@@ -62,7 +62,7 @@ async function seedDatabase() {
             const hashedPassword = await bcrypt.hash(userData.password, 10);
             userData.password = hashedPassword;
 
-            const [user, created] = await User.findOrCreate({
+            const [user] = await User.findOrCreate({
                 where: { email: userData.email },
                 defaults: userData,
             });
@@ -107,6 +107,20 @@ async function seedDatabase() {
             comments.push(comment);
         }
 
+        // Create replies for some comments
+        for (const comment of comments) {
+            if (Math.random() < 0.3) { // 30% chance a comment has replies
+                const replyCount = getRandomInt(0, 5); // Generate between 0 and 5 replies
+                for (let i = 0; i < replyCount; i++) {
+                    await Reply.create({
+                        content: faker.lorem.sentence(),
+                        commentId: comment.id,
+                        userId: users[Math.floor(Math.random() * users.length)].id,
+                    });
+                }
+            }
+        }
+
         for (let i = 0; i < 3000; i++) {
             const like = await Like.create({
                 type: faker.helpers.arrayElement(['like', 'dislike']),
@@ -125,7 +139,7 @@ async function seedDatabase() {
 
         console.log('Database seeded successfully!');
     } catch (error) {
-        console.error('Error seeding the database:', error);
+        logger.error('Error seeding the database:', error);
     }
 }
 

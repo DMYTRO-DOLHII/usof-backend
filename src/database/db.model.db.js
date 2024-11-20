@@ -96,10 +96,19 @@ const Comment = sequelize.define('Comment', {
     status: {
         type: DataTypes.ENUM('active', 'inactive'),
         defaultValue: 'active',
+    }
+}, {
+    timestamps: false,
+});
+
+const Reply = sequelize.define('Reply', {
+    content: {
+        type: DataTypes.TEXT,
+        allowNull: false,
     },
-    parentCommentId: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+    publishDate: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
     },
 }, {
     timestamps: false,
@@ -145,10 +154,11 @@ Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' }); // Man
 Comment.belongsTo(Post, { foreignKey: 'postId', as: 'post', onDelete: 'CASCADE' }); // Each comment belongs to a post
 Comment.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' }); // Each comment belongs to a user (author)
 Comment.hasMany(Like, { foreignKey: 'commentId', as: 'likes', onDelete: 'CASCADE' });
-Comment.belongsTo(Comment, { foreignKey: 'parentCommentId', as: 'parentComment', onDelete: 'CASCADE', }); // A comment can belong to a parent comment
-Comment.hasMany(Comment, { foreignKey: 'parentCommentId', as: 'replies', onDelete: 'CASCADE' }); // A comment can have multiple replies
+Comment.hasMany(Reply, { foreignKey: 'commentId', as: 'replies', onDelete: 'CASCADE' }); // Each comment can have multiple replies
 
-
+// Reply relationships
+Reply.belongsTo(Comment, { foreignKey: 'commentId', as: 'comment', onDelete: 'CASCADE' }); // Each reply belongs to a single comment
+Reply.belongsTo(User, { foreignKey: 'userId', as: 'user', onDelete: 'CASCADE' }); // Each reply belongs to a user (author)
 
 // Like relationships
 Like.belongsTo(Post, { foreignKey: 'postId', as: 'post', onDelete: 'CASCADE' }); // Each like belongs to a post
@@ -180,6 +190,7 @@ module.exports = {
     Post,
     Category,
     Comment,
+    Reply,
     Like,
     Favourite
 };
