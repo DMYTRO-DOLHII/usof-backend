@@ -2,6 +2,8 @@ const { compareSync } = require('bcrypt');
 const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const UserModel = require('../models/model.user');
+const logger = require('../utils/logger');
+const { Reply, User } = require('../database/db.model.db');
 
 exports.getCommentById = async (req, res) => {
     const { comment_id } = req.params;
@@ -79,6 +81,35 @@ exports.createLike = async (req, res) => {
 
         return res.status(201).json({ message: 'Like added successfully', like });
     } catch (error) {
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+exports.createReply = async (req, res) => {
+    const {comment_id} = req.params;
+    const {content} = req.body;
+    const userId = req.user.id;
+
+    try {
+        const reply = await Reply.create({
+            content: content,
+            commentId: comment_id,
+            userId: userId
+        });
+
+        const newReply = await Reply.findByPk(reply.id, {
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'login', 'profilePicture'],
+                },
+            ],
+        });
+
+        return res.status(200).json(newReply);
+    } catch (error) {
+        logger.error(error.message);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
