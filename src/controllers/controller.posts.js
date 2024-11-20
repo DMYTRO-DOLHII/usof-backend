@@ -3,7 +3,7 @@ const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
 const UserModel = require('../models/model.user');
-const { Post } = require('../database/db.model.db');
+const { Post, Comment } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 exports.getAllPosts = async (req, res) => {
@@ -137,7 +137,12 @@ exports.createComment = async (req, res) => {
         }
 
         const newComment = await CommentModel.create({ content, postId: post_id, userId: req.user.id });
-        return res.status(201).json({ message: 'Comment created successfully', comment: newComment });
+
+        const comment = await Comment.findByPk(newComment.id, {
+            include: ['likes', 'user', 'replies']
+        })
+
+        return res.status(201).json({ message: 'Comment created successfully', comment: comment });
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }

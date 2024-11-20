@@ -85,8 +85,7 @@ const authorizeReplyCreator = async (req, res, next) => {
         const { reply_id } = req.params;
         const userId = req.user.id;
         const userRole = req.user.role;
-
-        console.log(reply_id);
+        
         const reply = await Reply.findByPk(reply_id);
 
 
