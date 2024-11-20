@@ -3,6 +3,7 @@ const logger = require('../utils/logger');
 const UserModel = require('../models/model.user');
 const PostModel = require('../models/model.post');
 const CommentModel = require('../models/model.comment');
+const { Reply } = require('../database/db.model.db');
 const { SECRET_KEY } = process.env;
 
 const validateToken = (req, res, next) => {
@@ -79,4 +80,29 @@ const authorizeCommentCreator = async (req, res, next) => {
     }
 };
 
-module.exports = { validateToken, isAdmin, authorizePostCreator, authorizeCommentCreator };
+const authorizeReplyCreator = async (req, res, next) => {
+    try {
+        const { reply_id } = req.params;
+        const userId = req.user.id;
+        const userRole = req.user.role;
+
+        console.log(reply_id);
+        const reply = await Reply.findByPk(reply_id);
+
+
+        if (!reply) {
+            return res.status(404).json({ message: 'Reply not found' });
+        }
+
+        if (reply.userId === userId || userRole === 'admin') {
+            return next();
+        } else {
+            return res.status(403).json({ message: 'Not authorized to perform this action' });
+        }
+    } catch (error) {
+        logger.error(`Authorization error: ${error.message}`);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+module.exports = { validateToken, isAdmin, authorizePostCreator, authorizeCommentCreator, authorizeReplyCreator };

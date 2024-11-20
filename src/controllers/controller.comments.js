@@ -86,8 +86,8 @@ exports.createLike = async (req, res) => {
 };
 
 exports.createReply = async (req, res) => {
-    const {comment_id} = req.params;
-    const {content} = req.body;
+    const { comment_id } = req.params;
+    const { content } = req.body;
     const userId = req.user.id;
 
     try {
@@ -108,6 +108,20 @@ exports.createReply = async (req, res) => {
         });
 
         return res.status(200).json(newReply);
+    } catch (error) {
+        logger.error(error.message);
+        return res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+exports.deleteReply = async (req, res) => {
+    const { reply_id } = req.params;
+
+    try {
+        const reply = await Reply.findByPk(reply_id);
+        await reply.destroy();
+
+        return res.status(200).json({ message: 'Reply deleted' });
     } catch (error) {
         logger.error(error.message);
         return res.status(500).json({ message: 'Server error', error: error.message });
