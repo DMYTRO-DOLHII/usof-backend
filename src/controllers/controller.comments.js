@@ -120,7 +120,6 @@ exports.deleteReply = async (req, res) => {
     try {
         const reply = await Reply.findByPk(reply_id);
         await reply.destroy();
-
         return res.status(200).json({ message: 'Reply deleted' });
     } catch (error) {
         logger.error(error.message);

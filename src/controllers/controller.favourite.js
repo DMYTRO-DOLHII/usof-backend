@@ -1,3 +1,4 @@
+const { logger } = require('sequelize/lib/utils/logger');
 const db = require('../database/db.model.db');
 
 exports.getFavourites = async (req, res) => {
@@ -11,6 +12,21 @@ exports.getFavourites = async (req, res) => {
 
         res.status(200).json(favorites);
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.getPostFavourites = async (req, res) => {
+    try {
+        const { post_id } = req.params;
+
+        const favourites = await db.Favourite.findAll({
+            where: { postId: post_id }
+        })
+
+        res.status(200).json({ favourites });
+    } catch (error) {
+        logger.error(error.message);
         res.status(500).json({ error: error.message });
     }
 };

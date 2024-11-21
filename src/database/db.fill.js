@@ -130,7 +130,7 @@ async function seedDatabase() {
             });
         }
 
-        for (let i = 0; i < 50; i++) {
+        for (let i = 0; i < 1500; i++) {
             await Favourite.create({
                 userId: users[Math.floor(Math.random() * users.length)].id,
                 postId: posts[Math.floor(Math.random() * posts.length)].id,

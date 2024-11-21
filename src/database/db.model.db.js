@@ -146,7 +146,7 @@ Post.belongsTo(User, { as: 'user', foreignKey: 'userId', onDelete: 'CASCADE' });
 Post.belongsToMany(Category, { through: 'PostCategories', as: 'categories' }); // Many-to-Many between Post and Category
 Post.hasMany(Comment, { foreignKey: 'postId', as: 'comments', onDelete: 'CASCADE' }); // Each post can have multiple comments
 Post.hasMany(Like, { foreignKey: 'postId', as: 'likes', onDelete: 'CASCADE' }); // Each post can have multiple likes
-
+Post.hasMany(Favourite, {foreignKey: 'postId', as: 'favourites', onDelete: 'CASCADE'});
 // Category relationships
 Category.belongsToMany(Post, { through: 'PostCategories', as: 'posts' }); // Many-to-Many between Category and Post
 

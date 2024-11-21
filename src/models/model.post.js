@@ -1,4 +1,4 @@
-const { Post, Category, Comment, Like, User } = require('../database/db.model.db');
+const { Post, Category, Comment, Like, User, Favourite } = require('../database/db.model.db');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
 
@@ -196,17 +196,7 @@ class PostModel {
     static async findById(postId) {
         try {
             return await Post.findByPk(postId, {
-                include: [
-                    {
-                        model: Like,
-                        as: 'likes',
-                    },
-                    {
-                        model: User,
-                        as: 'user',
-                        attributes: ['id', 'login', 'profilePicture']
-                    }
-                ]
+                include: ['likes', 'user', 'categories', 'favourites']
             });
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
