@@ -53,7 +53,7 @@ exports.removeFavourite = async (req, res) => {
         const { post_id } = req.params;
         const userId = req.user.id;
 
-        const favorite = await db.Favourite.findOne({ where: { userId, postId: post_id } });
+        const favorite = await db.Favourite.findOne({ where: { userId: userId, postId: post_id } });
         if (!favorite) {
             return res.status(404).json({ message: 'Favorite not found' });
         }
