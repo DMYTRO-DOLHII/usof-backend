@@ -30,55 +30,33 @@ exports.getLikesByCommentId = async (req, res) => {
 
 exports.createLike = async (req, res) => {
     const { comment_id } = req.params;
-    const { type } = req.body;
+    const { type, postId } = req.body;
     const userId = req.user.id;
 
     try {
-        const comment = await CommentModel.findById(comment_id);
 
-        if (!comment) {
-            return res.status(404).json({ message: 'Comment not found' });
-        }
-
-        const user = await UserModel.findById(comment.userId);
-
-        const existingLike = await LikeModel.findByCommentUserId({ userId: userId, commentId: comment_id });
+        const existingLike = await LikeModel.findPostCommentLike({ userId: userId, commentId: comment_id, postId: postId });
         if (existingLike) {
             if (existingLike.type === type) {
-                if (type === 'like') {
-                    await existingLike.destroy();
-                    // user.rating -= 1;
-                    // await user.save();
-                } else {
-                    await existingLike.destroy();
-                    // user.rating += 1;
-                    // await user.save();
-                }
+                await existingLike.destroy();
             } else {
-                if (type === 'like') {
-                    existingLike.type = type;
-                    await existingLike.save()
-                    // user.rating += 2;
-                    // await user.save();
-                } else {
-                    existingLike.type = type;
-                    await existingLike.save();
-                    // user.rating -= 2;
-                    // await user.save();
-                }
+                existingLike.type = type;
+                await existingLike.save();
             }
+        } else {
+            const like = await LikeModel.create({
+                userId: userId,
+                commentId: comment_id,
+                postId: postId,
+                type: type
+            });
         }
 
-        const like = await LikeModel.create({
-            userId: userId,
-            commentId: comment_id,
-            type: type
-        });
+        const comment = await CommentModel.findById(comment_id);
 
-        const likes = await LikeModel.findByCommentId(comment_id);
-
-        return res.status(201).json({ likes });
+        return res.status(201).json({ comment });
     } catch (error) {
+        logger.error(error.message);
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };

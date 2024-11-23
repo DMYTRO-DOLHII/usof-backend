@@ -1,3 +1,4 @@
+const { noTrueLogging } = require('sequelize/lib/utils/deprecations');
 const { Like } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
@@ -29,6 +30,21 @@ class LikeModel {
         }
     }
 
+    static async findPostCommentLike({ commentId, postId, userId }) {
+        try {
+            return await Like.findOne({
+                where: {
+                    userId: userId,
+                    commentId: commentId,
+                    postId: postId
+                }
+            })
+        } catch (error) {
+            logger.error(error.message);
+            throw error;
+        }
+    }
+
     static async getAllByPost(postId) {
         try {
             return await Like.findAll({ where: { postId } });
@@ -44,6 +60,20 @@ class LikeModel {
             return likes;
         } catch (error) {
             logger.error(`Fetching likes for comment ID ${commentId} error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findPostCommentLikes({ commentId, postId }) {
+        try {
+            return await Like.findOne({
+                where: {
+                    commentId: commentId,
+                    postId: postId
+                }
+            });
+        } catch (error) {
+            logger.error(error.message);
             throw error;
         }
     }

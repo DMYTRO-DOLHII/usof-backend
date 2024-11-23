@@ -52,9 +52,30 @@ class CommentModel {
 
     static async findById(commentId) {
         try {
-            return await Comment.findOne({ 
+            return await Comment.findOne({
                 where: { id: commentId },
-                include: ['likes']
+                include: [
+                    {
+                        model: Like,
+                        as: 'likes',
+                    },
+                    {
+                        model: Reply,
+                        as: 'replies',
+                        include: [
+                            {
+                                model: User,
+                                as: 'user',
+                                attributes: ['id', 'login', 'profilePicture'],
+                            },
+                        ],
+                    },
+                    {
+                        model: User,
+                        as: 'user',
+                        attributes: ['id', 'login', 'profilePicture'],
+                    },
+                ],
             });
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
