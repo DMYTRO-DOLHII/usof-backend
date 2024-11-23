@@ -49,12 +49,10 @@ exports.createLike = async (req, res) => {
                     await existingLike.destroy();
                     // user.rating -= 1;
                     // await user.save();
-                    return res.status(201).json({ message: "Like deleted" });
                 } else {
                     await existingLike.destroy();
                     // user.rating += 1;
                     // await user.save();
-                    return res.status(201).json({ message: "Dislike deleted" });
                 }
             } else {
                 if (type === 'like') {
@@ -62,13 +60,11 @@ exports.createLike = async (req, res) => {
                     await existingLike.save()
                     // user.rating += 2;
                     // await user.save();
-                    return res.status(201).json({ message: "Dislike deleted, Like added" });
                 } else {
                     existingLike.type = type;
                     await existingLike.save();
                     // user.rating -= 2;
                     // await user.save();
-                    return res.status(201).json({ message: "Like deleted, Dislike added" });
                 }
             }
         }
@@ -79,7 +75,9 @@ exports.createLike = async (req, res) => {
             type: type
         });
 
-        return res.status(201).json({ message: 'Like added successfully', like });
+        const likes = await LikeModel.findByCommentId(comment_id);
+
+        return res.status(201).json({ likes });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
     }
