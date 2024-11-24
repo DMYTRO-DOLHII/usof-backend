@@ -25,7 +25,7 @@ async function seedDatabase() {
             email: 'iuudda@gmail.com',
             emailConfirmed: true,
             role: 'user',
-            profilePicture: 'uploads/iuudda.jpeg',
+            profilePicture: 'uploads/priehali.gif',
         };
 
         const hashedAdminPassword = await bcrypt.hash(adminData.password, 10);
