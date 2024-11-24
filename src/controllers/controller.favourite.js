@@ -16,6 +16,19 @@ exports.getFavourites = async (req, res) => {
     }
 };
 
+exports.getUserFavourites = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+
+        const favourites = await db.Favourite.findAll({
+            where: {}
+        })
+    } catch (error) {
+        logger.error(error.message);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 exports.getPostFavourites = async (req, res) => {
     try {
         const { post_id } = req.params;

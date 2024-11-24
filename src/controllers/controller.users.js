@@ -8,7 +8,7 @@ exports.getAllUsers = async (req, res) => {
         if (limit && offset) {
 
             const { count, rows: users } = await UserModel.findAllAndCount({
-                limit: limit, offset: offset, search: search, order: order 
+                limit: limit, offset: offset, search: search, order: order
             });
 
             return res.status(200).json({
@@ -27,6 +27,18 @@ exports.getAllUsers = async (req, res) => {
     }
 };
 
+exports.getUserFavouritePosts = async (req, res) => {
+    try {
+        const { user_id } = req.params;
+
+        const posts = await UserModel.findUserFavouritePosts(user_id);
+
+        return res.status(200).json(posts);
+    } catch (error) {
+        logger.error(error.message);
+        res.status(500).json({ error: error.message });
+    }
+};
 
 exports.getUserById = async (req, res) => {
     const { user_id } = req.params;

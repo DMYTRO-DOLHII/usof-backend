@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
-const { User } = require('../database/db.model.db');
-const { Op } = require('sequelize');
+const { User, Post, Favourite, Category } = require('../database/db.model.db');
+const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
 
 class UserModel {
@@ -23,6 +23,59 @@ class UserModel {
             });
         } catch (error) {
             logger.error(`Fetching users error: ${error.message}`);
+            throw error;
+        }
+    }
+
+    static async findUserFavouritePosts(userId) {
+        try {
+            const favourites = await Favourite.findAll({
+                where: { userId }
+            });
+    
+            if (!favourites || favourites.length === 0) {
+                return [];
+            }
+    
+            const postIds = favourites.map((fav) => fav.postId);
+
+            const posts = await Post.findAll({
+                where: {id: postIds},
+                include: ['user', 'categories', 'favourites'],
+                attributes: {
+                    include: [
+                        [
+                            Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "Comments" AS "comments"
+                            WHERE "comments"."postId" = "Post"."id"
+                        )`),
+                            "commentsCount"
+                        ],
+                        [
+                            Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "Likes" AS "likes"
+                            WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                        )`),
+                            "likes"
+                        ],
+                        [
+                            Sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM "Likes" AS "likes"
+                            WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                        )`),
+                            "dislikes"
+                        ]
+                    ]
+                },
+                distinct: true
+            });
+
+            return posts;
+        } catch (error) {
+            logger.error(error.message);
             throw error;
         }
     }

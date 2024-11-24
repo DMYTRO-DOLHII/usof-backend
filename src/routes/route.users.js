@@ -6,6 +6,7 @@ const upload = require('../middlewares/middlware.upload');
 
 router.get('/', userController.getAllUsers);
 router.get('/:user_id', userController.getUserById);
+router.get('/:user_id/favourites', userController.getUserFavouritePosts);
 
 router.post('/', [validateToken, isAdmin], userController.createUser);
 
