@@ -7,12 +7,18 @@ const { Post, Comment } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 
 exports.getAllPosts = async (req, res) => {
-    const { limit, offset, search } = req.query;
+    const { limit, offset, search, sort } = req.query;
 
     try {
-        const { count, rows: posts } = await PostModel.findAllBySearchAndCount({ limit: limit || 30, offset: offset, search: search || '' });
+        const { count, rows: posts } = await PostModel.findAllBySearchAndCount({
+            limit: limit || 30,
+            offset: offset,
+            search: search || '',
+            sort: sort
+        });
+
         return res.status(200).json({
-            posts,
+            posts: posts,
             pagination: {
                 totalItems: count,
             },
@@ -22,6 +28,7 @@ exports.getAllPosts = async (req, res) => {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };
+
 
 exports.getUserAllPosts = async (req, res) => {
     const { user_id } = req.params;

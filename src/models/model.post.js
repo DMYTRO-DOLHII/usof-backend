@@ -80,69 +80,24 @@ class PostModel {
         }
     }
 
-    // static async findAllAndCount({ limit, offset }) {
-    //     try {
-    //         return await Post.findAndCountAll({
-    //             limit,
-    //             offset,
-    //             order: [['publishDate', 'DESC']],
-    //             include: [
-    //                 {
-    //                     model: Category,
-    //                     as: 'categories',
-    //                     attributes: ['id', 'title'],
-    //                     through: { attributes: [] }
-    //                 }
-    //             ],
-    //             attributes: {
-    //                 include: [
-    //                     [
-    //                         Sequelize.literal(`(
-    //                             SELECT COUNT(*)
-    //                             FROM "Comments" AS "comments"
-    //                             WHERE "comments"."postId" = "Post"."id"
-    //                         )`),
-    //                         "commentsCount"
-    //                     ],
-    //                     [
-    //                         Sequelize.literal(`(
-    //                             SELECT COUNT(*)
-    //                             FROM "Likes" AS "likes"
-    //                             WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
-    //                         )`),
-    //                         "likes"
-    //                     ],
-    //                     [
-    //                         Sequelize.literal(`(
-    //                             SELECT COUNT(*)
-    //                             FROM "Likes" AS "likes"
-    //                             WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
-    //                         )`),
-    //                         "dislikes"
-    //                     ]
-    //                 ]
-    //             },
-    //             distinct: true
-    //         });
-    //     } catch (error) {
-    //         logger.error(`Fetching posts error: ${error.message}`);
-    //         throw error;
-    //     }
-    // }
+    static async findAllBySearchAndCount({ limit, offset, search, sort }) {
+        let order = [];
+        let where = {
+            [Op.or]: [
+                { title: { [Op.like]: `%${search}%` } },
+                { content: { [Op.like]: `%${search}%` } }
+            ]};
 
+        if (sort === 'active') where = { ...where, status: 'active' };
+        if (sort === 'dateCreated') order = [['publishDate', 'DESC']];
+        if (sort === 'highestScore') order = [[Sequelize.literal('"likes"'), 'DESC']];
 
-    static async findAllBySearchAndCount({ limit, offset, search }) {
         try {
             return await Post.findAndCountAll({
                 limit,
                 offset,
-                order: [['publishDate', 'DESC']],
-                where: {
-                    [Op.or]: [
-                        { title: { [Op.like]: `%${search}%` } },
-                        { content: { [Op.like]: `%${search}%` } }
-                    ]
-                },
+                order: order,
+                where: where,
                 include: [
                     {
                         model: Category,
@@ -191,7 +146,6 @@ class PostModel {
             throw error;
         }
     }
-
 
     static async findById(postId) {
         try {
