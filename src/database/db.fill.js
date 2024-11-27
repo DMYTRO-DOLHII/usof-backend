@@ -5,7 +5,6 @@ const logger = require('../utils/logger');
 
 async function seedDatabase() {
     try {
-        // Create users
         const users = [];
 
         const adminData = {
@@ -47,7 +46,6 @@ async function seedDatabase() {
         users.push(admin);
         users.push(iuudda);
 
-        // Create and store additional users
         for (let i = 0; i < 120; i++) {
             const userData = {
                 login: faker.internet.userName(),
@@ -67,17 +65,24 @@ async function seedDatabase() {
                 defaults: userData,
             });
 
-            users.push(user); // Push each created user to the users array
+            users.push(user);
+        }
+
+        const uniqueCategoryTitles = new Set();
+
+        while (uniqueCategoryTitles.size < 20) {
+            uniqueCategoryTitles.add(faker.commerce.department());
         }
 
         const categories = [];
-        for (let i = 0; i < 30; i++) {
+        for (const title of uniqueCategoryTitles) {
             const category = await Category.create({
-                title: faker.commerce.department(),
+                title,
                 description: faker.lorem.sentence(),
             });
             categories.push(category);
         }
+
 
         const posts = [];
         for (let i = 0; i < 300; i++) {
@@ -107,10 +112,9 @@ async function seedDatabase() {
             comments.push(comment);
         }
 
-        // Create replies for some comments
         for (const comment of comments) {
-            if (Math.random() < 0.3) { // 30% chance a comment has replies
-                const replyCount = getRandomInt(0, 5); // Generate between 0 and 5 replies
+            if (Math.random() < 0.3) {
+                const replyCount = getRandomInt(0, 5);
                 for (let i = 0; i < replyCount; i++) {
                     await Reply.create({
                         content: faker.lorem.sentence(),
