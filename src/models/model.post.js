@@ -89,19 +89,16 @@ class PostModel {
             ]
         };
     
-        // If sort is 'active', add the 'active' status to the where clause
         if (sort === 'active') where = { ...where, status: 'active' };
         if (sort === 'dateCreated') order = [['publishDate', 'DESC']];
         if (sort === 'highestScore') order = [[Sequelize.literal('"likes"'), 'DESC']];
     
-        // Handle search starting with '-c'
         let categoryWhere = {};
         if (search.startsWith('-c')) {
-            const categoryName = search.slice(2).trim(); // Extract category name after '-c'
+            const categoryName = search.slice(2).trim();
             categoryWhere = {
                 title: { [Op.like]: `%${categoryName}%` }
             };
-            // Clear the default 'where' filter, as we only care about the category filter in this case
             where = {};
         }
     
@@ -117,7 +114,7 @@ class PostModel {
                         as: 'categories',
                         attributes: ['id', 'title'],
                         through: { attributes: [] },
-                        where: categoryWhere // Apply category filter if search starts with '-c'
+                        where: categoryWhere
                     },
                     {
                         model: User,
