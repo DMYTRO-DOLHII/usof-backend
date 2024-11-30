@@ -3,7 +3,7 @@ const UserModel = require('../models/model.user');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
 const generateToken = require('../utils/token');
-const { sendConfirmationEmail } = require('../utils/email');
+const { sendConfirmationEmail, sendResetPassword } = require('../utils/email');
 const crypto = require('crypto');
 const { doesNotMatch } = require('assert');
 const logger = require('../utils/logger');
@@ -136,7 +136,7 @@ exports.requestPasswordReset = async (req, res) => {
 
         const resetLink = `${process.env.FRONT_URL}/password-reset/${resetToken}`;
 
-        sendConfirmationEmail(user.email, user.login, resetLink);
+        sendResetPassword(user.email, user.login, resetLink);
 
         return res.status(200).json({ message: 'Password reset link sent to email' });
     } catch (error) {
@@ -151,6 +151,8 @@ exports.confirmPasswordReset = async (req, res) => {
     if (!newPassword) {
         return res.status(400).json({ message: 'New password is required' });
     }
+
+    console.log(confirmToken.token);
 
     try {
         const decode_v2 = jwt.verify(confirmToken, process.env.SECRET_KEY);
