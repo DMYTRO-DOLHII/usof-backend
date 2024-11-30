@@ -136,7 +136,9 @@ class PostModel {
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
                                 FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                                WHERE "likes"."postId" = "Post"."id" 
+                                AND "likes"."commentId" is NULL 
+                                AND "likes"."type" = 'like'
                             )`),
                             "likes"
                         ],
@@ -144,7 +146,9 @@ class PostModel {
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
                                 FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                                WHERE "likes"."postId" = "Post"."id" 
+                                AND "likes"."commentId" is NULL 
+                                AND "likes"."type" = 'dislike'
                             )`),
                             "dislikes"
                         ]

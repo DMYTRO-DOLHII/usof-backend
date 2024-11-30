@@ -46,7 +46,7 @@ async function seedDatabase() {
         users.push(admin);
         users.push(iuudda);
 
-        for (let i = 0; i < 120; i++) {
+        for (let i = 0; i < 300; i++) {
             const userData = {
                 login: faker.internet.userName(),
                 password: faker.internet.password(),
@@ -114,7 +114,7 @@ async function seedDatabase() {
 
         for (const comment of comments) {
             if (Math.random() < 0.3) {
-                const replyCount = getRandomInt(0, 5);
+                const replyCount = getRandomInt(0, 10);
                 for (let i = 0; i < replyCount; i++) {
                     await Reply.create({
                         content: faker.lorem.sentence(),
@@ -125,7 +125,16 @@ async function seedDatabase() {
             }
         }
 
-        for (let i = 0; i < 3000; i++) {
+        for (let i = 0; i < 10000; i++) {
+            const like = await Like.create({
+                type: faker.helpers.arrayElement(['like', 'dislike']),
+                postId: posts[Math.floor(Math.random() * posts.length)].id,
+                userId: users[Math.floor(Math.random() * users.length)].id,
+                commentId: null,
+            });
+        }
+
+        for (let i = 0; i < 60000; i++) {
             const like = await Like.create({
                 type: faker.helpers.arrayElement(['like', 'dislike']),
                 postId: posts[Math.floor(Math.random() * posts.length)].id,
