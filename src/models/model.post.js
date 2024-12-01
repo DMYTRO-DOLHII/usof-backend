@@ -58,7 +58,9 @@ class PostModel {
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
                                 FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'like'
+                                WHERE "likes"."postId" = "Post"."id" 
+                                AND "likes"."commentId" is NULL 
+                                AND "likes"."type" = 'like'
                             )`),
                             "likes"
                         ],
@@ -66,7 +68,9 @@ class PostModel {
                             Sequelize.literal(`(
                                 SELECT COUNT(*)
                                 FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" AND "likes"."type" = 'dislike'
+                                WHERE "likes"."postId" = "Post"."id" 
+                                AND "likes"."commentId" is NULL 
+                                AND "likes"."type" = 'dislike'
                             )`),
                             "dislikes"
                         ]
@@ -88,11 +92,11 @@ class PostModel {
                 { content: { [Op.like]: `%${search}%` } }
             ]
         };
-    
+
         if (sort === 'active') where = { ...where, status: 'active' };
         if (sort === 'dateCreated') order = [['publishDate', 'DESC']];
         if (sort === 'highestScore') order = [[Sequelize.literal('"likes"'), 'DESC']];
-    
+
         let categoryWhere = {};
         if (search.startsWith('-c')) {
             const categoryName = search.slice(2).trim();
@@ -101,7 +105,7 @@ class PostModel {
             };
             where = {};
         }
-    
+
         try {
             return await Post.findAndCountAll({
                 limit,
@@ -161,7 +165,7 @@ class PostModel {
             throw error;
         }
     }
-    
+
 
     static async findById(postId) {
         try {

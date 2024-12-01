@@ -9,8 +9,6 @@ const logger = require('../utils/logger');
 exports.getAllPosts = async (req, res) => {
     const { limit, offset, search, sort } = req.query;
 
-    console.log("PENIS");
-
     try {
         const { count, rows: posts } = await PostModel.findAllBySearchAndCount({
             limit: limit || 30,

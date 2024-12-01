@@ -19,8 +19,9 @@ const favouriteRouter = require('./routes/route.favourite');
 app.use(express.json());
 
 const allowedOrigins = [
-    'http://localhost:3000',
-    `http://${process.env.IP}:3000`,
+    process.env.BACK_URL,
+    process.env.FRONT_URL,
+    `http://${process.env.IP}:8080`,
 ];
 
 const corsOptions = {
