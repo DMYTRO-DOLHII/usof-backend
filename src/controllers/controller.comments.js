@@ -30,12 +30,13 @@ exports.getLikesByCommentId = async (req, res) => {
 
 exports.createLike = async (req, res) => {
     const { comment_id } = req.params;
-    const { type, postId } = req.body;
+    const { type } = req.body;
     const userId = req.user.id;
 
     try {
+        const existingComment = await CommentModel.findById(comment_id);
 
-        const existingLike = await LikeModel.findPostCommentLike({ userId: userId, commentId: comment_id, postId: postId });
+        const existingLike = await LikeModel.findPostCommentLike({ userId: userId, commentId: comment_id, postId: existingComment.postId });
         if (existingLike) {
             if (existingLike.type === type) {
                 await existingLike.destroy();
@@ -47,7 +48,7 @@ exports.createLike = async (req, res) => {
             const like = await LikeModel.create({
                 userId: userId,
                 commentId: comment_id,
-                postId: postId,
+                postId: existingComment.postId,
                 type: type
             });
         }
