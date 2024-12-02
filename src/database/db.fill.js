@@ -125,6 +125,7 @@ async function seedDatabase() {
             }
         }
 
+        // Post likes
         for (let i = 0; i < 10000; i++) {
             const like = await Like.create({
                 type: faker.helpers.arrayElement(['like', 'dislike']),
@@ -134,12 +135,14 @@ async function seedDatabase() {
             });
         }
 
+        // Comment likes
         for (let i = 0; i < 60000; i++) {
+            const comment = comments[Math.floor(Math.random() * comments.length)];
             const like = await Like.create({
                 type: faker.helpers.arrayElement(['like', 'dislike']),
-                postId: posts[Math.floor(Math.random() * posts.length)].id,
+                postId: comment.postId,
                 userId: users[Math.floor(Math.random() * users.length)].id,
-                commentId: comments[Math.floor(Math.random() * comments.length)].id,
+                commentId: comment.id,
             });
         }
 

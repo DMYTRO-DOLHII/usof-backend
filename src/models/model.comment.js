@@ -19,11 +19,12 @@ class CommentModel {
     static async findAllByPost(postId) {
         try {
             return await Comment.findAll({
-                where: { postId },
+                where: { postId: postId },
                 include: [
                     {
                         model: Like,
                         as: 'likes',
+                        where: {postId: postId}
                     },
                     {
                         model: Reply,

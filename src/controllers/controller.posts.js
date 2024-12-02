@@ -86,7 +86,7 @@ exports.getPostComments = async (req, res) => {
     const { sort } = req.query;
 
     try {
-        const comments = await CommentModel.findAllByPost(post_id, sort);
+        const comments = await CommentModel.findAllByPost(post_id);
         return res.status(200).json(comments);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
