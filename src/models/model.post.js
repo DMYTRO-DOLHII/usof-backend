@@ -1,6 +1,7 @@
 const { Post, Category, Comment, Like, User, Favourite } = require('../database/db.model.db');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
+const { getLikesByCommentId } = require('../controllers/controller.comments');
 
 class PostModel {
     static async create({ title, content, userId, category }) {
@@ -170,7 +171,15 @@ class PostModel {
     static async findById(postId) {
         try {
             return await Post.findByPk(postId, {
-                include: ['likes', 'user', 'categories', 'favourites']
+                include: [
+                    'user',
+                    'categories',
+                    'favourites',
+                    {
+                        model: Like,
+                        as: 'likes',
+                        where: { commentId: null }
+                    }]
             });
         } catch (error) {
             logger.error(`Post retrieval error: ${error.message}`);
