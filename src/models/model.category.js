@@ -47,12 +47,12 @@ class CategoryModel {
                 include: {
                     model: Post,
                     as: 'posts',
+                    where: {
+                        id: postId
+                    },
                     through: {
                         attributes: []
                     }
-                },
-                where: {
-                    id: postId
                 }
             });
 

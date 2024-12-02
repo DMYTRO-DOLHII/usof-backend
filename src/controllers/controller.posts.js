@@ -29,7 +29,6 @@ exports.getAllPosts = async (req, res) => {
     }
 };
 
-
 exports.getUserAllPosts = async (req, res) => {
     const { user_id } = req.params;
 
