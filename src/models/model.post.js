@@ -104,57 +104,18 @@ class PostModel {
                 offset,
                 order: order,
                 where: where,
-                include: [
-                    {
-                        model: Category,
-                        as: 'categories',
-                        attributes: ['id', 'title'],
-                        through: { attributes: [] },
-                    },
-                    {
-                        model: Category,
-                        as: 'categories',
-                        attributes: ['id', 'title'],
-                        through: { attributes: [] },
-                    },
+                include: ['categories', 'comments',
                     {
                         model: User,
                         as: 'user',
                         attributes: ['id', 'login', 'profilePicture']
                     },
+                    {
+                        model: Like,
+                        as: 'likes',
+                        where: { commentId: null }
+                    }
                 ],
-                attributes: {
-                    include: [
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Comments" AS "comments"
-                                WHERE "comments"."postId" = "Post"."id"
-                            )`),
-                            "commentsCount"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" 
-                                AND "likes"."commentId" is NULL 
-                                AND "likes"."type" = 'like'
-                            )`),
-                            "likes"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                                SELECT COUNT(*)
-                                FROM "Likes" AS "likes"
-                                WHERE "likes"."postId" = "Post"."id" 
-                                AND "likes"."commentId" is NULL 
-                                AND "likes"."type" = 'dislike'
-                            )`),
-                            "dislikes"
-                        ]
-                    ]
-                },
                 distinct: true
             });
         } catch (error) {

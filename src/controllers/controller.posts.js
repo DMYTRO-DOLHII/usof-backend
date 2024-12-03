@@ -3,17 +3,16 @@ const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
 const UserModel = require('../models/model.user');
-const { Post, Comment, Category, User } = require('../database/db.model.db');
+const { Post, Comment, Category, User, Like } = require('../database/db.model.db');
 const logger = require('../utils/logger');
 const { Op, Sequelize } = require('sequelize');
 
 exports.getAllPosts = async (req, res) => {
     const limit = parseInt(req.query.limit) || 30;
-    const search = req.query.search;
+    const search = req.query.search || '';
     const offset = parseInt(req.query.offset) || 0;
-    const sort = req.query.sort;
+    const sort = req.query.sort || 'dateCreated';
 
-    console.log(limit, offset, search, sort);
 
     try {
         if (search.startsWith('-c')) {
@@ -32,58 +31,23 @@ exports.getAllPosts = async (req, res) => {
                     model: Post,
                     as: 'posts',
                     through: { attributes: [] },
-                    include: [
-                        {
-                            model: Category,
-                            as: 'categories',
-                            attributes: ['id', 'title'],
-                            through: { attributes: [] },
-                        },
+                    include: ['categories', 'comments',
                         {
                             model: User,
                             as: 'user',
                             attributes: ['id', 'login', 'profilePicture']
+                        },
+                        {
+                            model: Like,
+                            as: 'likes',
+                            where: { commentId: null }
                         }
                     ],
-                    attributes: {
-                        include: [
-                            [
-                                Sequelize.literal(`(
-                                    SELECT COUNT(*)
-                                    FROM "Comments" AS "comments"
-                                    WHERE "comments"."postId" = "posts"."id"
-                                )`),
-                                "commentsCount"
-                            ],
-                            [
-                                Sequelize.literal(`(
-                                    SELECT COUNT(*)
-                                    FROM "Likes" AS "likes"
-                                    WHERE "likes"."postId" = "posts"."id"
-                                    AND "likes"."commentId" is NULL
-                                    AND "likes"."type" = 'like'
-                                )`),
-                                "likes"
-                            ],
-                            [
-                                Sequelize.literal(`(
-                                    SELECT COUNT(*)
-                                    FROM "Likes" AS "likes"
-                                    WHERE "likes"."postId" = "posts"."id"
-                                    AND "likes"."commentId" is NULL
-                                    AND "likes"."type" = 'dislike'
-                                )`),
-                                "dislikes"
-                            ]
-                        ]
-                    },
                     distinct: true
                 }]
             });
 
             const filteredPosts = categoryPosts.posts.slice(offset, (offset + limit));
-            console.log(categoryPosts.posts.length);
-            console.log(filteredPosts.length);
 
             return res.status(200).json({
                 posts: filteredPosts,
@@ -208,7 +172,6 @@ exports.createPost = async (req, res) => {
 
         if (categories && categories.length > 0) {
             const categoriesObjects = await CategoryModel.getAllCategories(categories);
-            console.log(categoriesObjects);
             await newPost.setCategories(categoriesObjects);
         }
 
