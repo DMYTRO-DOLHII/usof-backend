@@ -98,15 +98,6 @@ class PostModel {
         if (sort === 'dateCreated') order = [['publishDate', 'DESC']];
         if (sort === 'highestScore') order = [[Sequelize.literal('"likes"'), 'DESC']];
 
-        let categoryWhere = {};
-        if (search.startsWith('-c')) {
-            const categoryName = search.slice(2).trim();
-            categoryWhere = {
-                title: { [Op.like]: `%${categoryName}%` }
-            };
-            where = {};
-        }
-
         try {
             return await Post.findAndCountAll({
                 limit,
@@ -119,13 +110,18 @@ class PostModel {
                         as: 'categories',
                         attributes: ['id', 'title'],
                         through: { attributes: [] },
-                        where: categoryWhere
+                    },
+                    {
+                        model: Category,
+                        as: 'categories',
+                        attributes: ['id', 'title'],
+                        through: { attributes: [] },
                     },
                     {
                         model: User,
                         as: 'user',
                         attributes: ['id', 'login', 'profilePicture']
-                    }
+                    },
                 ],
                 attributes: {
                     include: [

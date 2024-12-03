@@ -3,13 +3,96 @@ const CommentModel = require('../models/model.comment');
 const LikeModel = require('../models/model.like');
 const CategoryModel = require('../models/model.category');
 const UserModel = require('../models/model.user');
-const { Post, Comment } = require('../database/db.model.db');
+const { Post, Comment, Category, User } = require('../database/db.model.db');
 const logger = require('../utils/logger');
+const { Op, Sequelize } = require('sequelize');
 
 exports.getAllPosts = async (req, res) => {
-    const { limit, offset, search, sort } = req.query;
+    const limit = parseInt(req.query.limit) || 30;
+    const search = req.query.search;
+    const offset = parseInt(req.query.offset) || 0;
+    const sort = req.query.sort;
+
+    console.log(limit, offset, search, sort);
 
     try {
+        if (search.startsWith('-c')) {
+            const categoryName = search.slice(2).trim();
+
+            const category = await Category.findOne({
+                where: { title: { [Op.like]: `%${categoryName}%` } }
+            });
+
+            if (!category) {
+                return res.status(404).json({ message: "Category not found" });
+            }
+
+            const categoryPosts = await Category.findByPk(category.id, {
+                include: [{
+                    model: Post,
+                    as: 'posts',
+                    through: { attributes: [] },
+                    include: [
+                        {
+                            model: Category,
+                            as: 'categories',
+                            attributes: ['id', 'title'],
+                            through: { attributes: [] },
+                        },
+                        {
+                            model: User,
+                            as: 'user',
+                            attributes: ['id', 'login', 'profilePicture']
+                        }
+                    ],
+                    attributes: {
+                        include: [
+                            [
+                                Sequelize.literal(`(
+                                    SELECT COUNT(*)
+                                    FROM "Comments" AS "comments"
+                                    WHERE "comments"."postId" = "posts"."id"
+                                )`),
+                                "commentsCount"
+                            ],
+                            [
+                                Sequelize.literal(`(
+                                    SELECT COUNT(*)
+                                    FROM "Likes" AS "likes"
+                                    WHERE "likes"."postId" = "posts"."id"
+                                    AND "likes"."commentId" is NULL
+                                    AND "likes"."type" = 'like'
+                                )`),
+                                "likes"
+                            ],
+                            [
+                                Sequelize.literal(`(
+                                    SELECT COUNT(*)
+                                    FROM "Likes" AS "likes"
+                                    WHERE "likes"."postId" = "posts"."id"
+                                    AND "likes"."commentId" is NULL
+                                    AND "likes"."type" = 'dislike'
+                                )`),
+                                "dislikes"
+                            ]
+                        ]
+                    },
+                    distinct: true
+                }]
+            });
+
+            const filteredPosts = categoryPosts.posts.slice(offset, (offset + limit));
+            console.log(categoryPosts.posts.length);
+            console.log(filteredPosts.length);
+
+            return res.status(200).json({
+                posts: filteredPosts,
+                pagination: {
+                    totalItems: categoryPosts.posts.length
+                }
+            });
+        }
+
         const { count, rows: posts } = await PostModel.findAllBySearchAndCount({
             limit: limit || 30,
             offset: offset,
@@ -86,7 +169,7 @@ exports.getPostComments = async (req, res) => {
     const { sort } = req.query;
 
     try {
-        const comments = await CommentModel.findAllByPost(post_id);
+        const comments = await CommentModel.findAllByPost(post_id, sort);
         return res.status(200).json(comments);
     } catch (error) {
         return res.status(500).json({ message: 'Server error. Please try again later.' });
