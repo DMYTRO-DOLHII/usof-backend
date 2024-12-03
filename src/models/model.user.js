@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const { User, Post, Favourite, Category } = require('../database/db.model.db');
+const { User, Post, Favourite, Category, Like } = require('../database/db.model.db');
 const { Op, Sequelize } = require('sequelize');
 const logger = require('../utils/logger');
 
@@ -32,48 +32,20 @@ class UserModel {
             const favourites = await Favourite.findAll({
                 where: { userId }
             });
-    
+
             if (!favourites || favourites.length === 0) {
                 return [];
             }
-    
+
             const postIds = favourites.map((fav) => fav.postId);
 
             const posts = await Post.findAll({
-                where: {id: postIds},
-                include: ['user', 'categories', 'favourites'],
-                attributes: {
-                    include: [
-                        [
-                            Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "Comments" AS "comments"
-                            WHERE "comments"."postId" = "Post"."id"
-                        )`),
-                            "commentsCount"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "Likes" AS "likes"
-                            WHERE "likes"."postId" = "Post"."id" 
-                            AND "likes"."commentId" is NULL 
-                            AND "likes"."type" = 'like'
-                        )`),
-                            "likes"
-                        ],
-                        [
-                            Sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM "Likes" AS "likes"
-                            WHERE "likes"."postId" = "Post"."id" 
-                            AND "likes"."commentId" is NULL 
-                            AND "likes"."type" = 'dislike'
-                        )`),
-                            "dislikes"
-                        ]
-                    ]
-                },
+                where: { id: postIds },
+                include: ['user', 'categories', 'favourites', 'comments', {
+                    model: Like,
+                    as: 'likes',
+                    where: { commentId: null }
+                }],
                 distinct: true
             });
 
