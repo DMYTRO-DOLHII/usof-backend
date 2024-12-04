@@ -18,13 +18,13 @@ async function seedDatabase() {
         };
 
         const iuuddaData = {
-            login: 'iuudda',
-            password: 'iuudda',
-            fullName: 'Mr. Iuudda',
-            email: 'iuudda@gmail.com',
+            login: 'foma',
+            password: 'foma',
+            fullName: 'Foma Evgenievich',
+            email: 'foma.rulit@gmail.com',
             emailConfirmed: true,
             role: 'user',
-            profilePicture: 'uploads/priehali.gif',
+            profilePicture: 'https://avatars.githubusercontent.com/u/91690675?v=4',
         };
 
         const hashedAdminPassword = await bcrypt.hash(adminData.password, 10);

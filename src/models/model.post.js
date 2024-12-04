@@ -63,7 +63,6 @@ class PostModel {
 
         if (sort === 'active') where = { ...where, status: 'active' };
         if (sort === 'dateCreated') order = [['publishDate', 'DESC']];
-        if (sort === 'highestScore') order = [[Sequelize.literal('"likes"'), 'DESC']];
 
         try {
             return await Post.findAndCountAll({

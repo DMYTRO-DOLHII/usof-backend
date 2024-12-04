@@ -64,6 +64,14 @@ exports.getAllPosts = async (req, res) => {
             sort: sort
         });
 
+        if (sort === 'highestScore') {
+            posts.sort((a, b) => {
+                const aLikes = a.likes.filter(like => like.type === 'like').length;
+                const bLikes = b.likes.filter(like => like.type === 'like').length;
+                return bLikes - aLikes; // Sort descending
+            });
+        }
+
         return res.status(200).json({
             posts: posts,
             pagination: {
