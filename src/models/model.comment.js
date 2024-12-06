@@ -24,7 +24,8 @@ class CommentModel {
                     {
                         model: Like,
                         as: 'likes',
-                        where: { postId: postId }
+                        where: { postId: postId },
+                        required: false
                     },
                     {
                         model: Reply,

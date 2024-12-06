@@ -41,7 +41,8 @@ class PostModel {
                     {
                         model: Like,
                         as: 'likes',
-                        where: { commentId: null }
+                        where: { commentId: null },
+                        required: false
                     }
                 ],
                 distinct: true
@@ -79,7 +80,8 @@ class PostModel {
                     {
                         model: Like,
                         as: 'likes',
-                        where: { commentId: null }
+                        where: { commentId: null },
+                        required: false
                     }
                 ],
                 distinct: true
@@ -89,7 +91,6 @@ class PostModel {
             throw error;
         }
     }
-
 
     static async findById(postId) {
         try {
@@ -101,7 +102,8 @@ class PostModel {
                     {
                         model: Like,
                         as: 'likes',
-                        where: { commentId: null }
+                        where: { commentId: null },
+                        required: false
                     }]
             });
         } catch (error) {
